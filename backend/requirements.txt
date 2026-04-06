@@ -1,0 +1,22 @@
+# BookBrain — Python Ingestion Pipeline
+# pip install -r requirements.txt --break-system-packages
+
+# Text extraction
+pymupdf>=1.23.0          # PDF extraction (import fitz)
+ebooklib>=0.18            # EPUB extraction
+beautifulsoup4>=4.12.0    # HTML cleaning from EPUB
+lxml>=5.0.0               # Parser for BS4
+
+# Embeddings & Vector DB
+sentence-transformers>=2.3.0
+chromadb>=0.4.22
+torch>=2.1.0
+
+# Chunking
+tiktoken>=0.5.0           # Token counting
+langchain-text-splitters>=0.0.1
+
+# Utils
+rich>=13.7.0              # Pretty CLI output
+python-dotenv>=1.0.0
+tqdm>=4.66.0

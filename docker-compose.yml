@@ -1,0 +1,32 @@
+version: "3.8"
+
+services:
+  # ── ChromaDB (Vector Store) ──────────────────────
+  chromadb:
+    image: chromadb/chroma:latest
+    ports:
+      - "8000:8000"
+    volumes:
+      - chroma_data:/chroma/chroma
+    environment:
+      - IS_PERSISTENT=TRUE
+      - ANONYMIZED_TELEMETRY=FALSE
+
+  # ── Ollama (Local LLM) — optional ───────────────
+  # Uncomment if you want Ollama in Docker instead of local install
+  # ollama:
+  #   image: ollama/ollama:latest
+  #   ports:
+  #     - "11434:11434"
+  #   volumes:
+  #     - ollama_data:/root/.ollama
+  #   # GPU support (NVIDIA):
+  #   # deploy:
+  #   #   resources:
+  #   #     reservations:
+  #   #       devices:
+  #   #         - capabilities: [gpu]
+
+volumes:
+  chroma_data:
+  # ollama_data:
