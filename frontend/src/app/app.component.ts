@@ -27,7 +27,7 @@ import { MatButtonModule } from '@angular/material/button';
   styles: [`
     .active-link { opacity: 1; font-weight: 500; }
     a[mat-button] { opacity: 0.75; }
-    .page-container { max-width: 900px; margin: 0 auto; padding: 24px 16px; }
+    .page-container { flex: 1; display: flex; flex-direction: column; min-height: 0; overflow: hidden; }
   `],
 })
 export class AppComponent {}

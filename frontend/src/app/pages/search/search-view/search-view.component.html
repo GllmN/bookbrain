@@ -1,0 +1,139 @@
+<div class="view-wrapper">
+
+  <!-- Mode Toggle + Controls -->
+  <div class="view-controls">
+    <mat-button-toggle-group [value]="mode()" (change)="mode.set($event.value)" class="mode-toggle">
+      <mat-button-toggle value="ask">
+        <mat-icon>chat</mat-icon>
+        Ask
+      </mat-button-toggle>
+      <mat-button-toggle value="search">
+        <mat-icon>search</mat-icon>
+        Search
+      </mat-button-toggle>
+    </mat-button-toggle-group>
+  </div>
+
+  <!-- Book Filter -->
+  @if (books().length) {
+    <mat-expansion-panel class="filter-panel">
+      <mat-expansion-panel-header>
+        <mat-panel-title>
+          Filter by books
+          @if (selectedBookIds().length) {
+            <mat-chip class="filter-chip">{{ selectedBookIds().length }}</mat-chip>
+          } @else {
+            <span class="filter-all">all</span>
+          }
+        </mat-panel-title>
+      </mat-expansion-panel-header>
+      <mat-chip-set>
+        @for (book of books(); track book.id) {
+          <mat-chip-option
+            [selected]="selectedBookIds().includes(book.id)"
+            (selectionChange)="toggleBook(book.id, $event.selected)">
+            {{ book.title }}
+          </mat-chip-option>
+        }
+      </mat-chip-set>
+    </mat-expansion-panel>
+  }
+
+  <!-- Scrollable content -->
+  <div class="content-area">
+
+    <!-- Chat Messages (Ask mode) -->
+    @if (mode() === 'ask') {
+      @if (messages().length || loading()) {
+        <div class="messages">
+          @for (msg of messages(); track $index) {
+            <div class="message" [class.message-user]="msg.role === 'user'" [class.message-assistant]="msg.role === 'assistant'">
+              <mat-card [class]="msg.role === 'user' ? 'message-card user-card' : 'message-card assistant-card'">
+                <mat-card-content>
+                  <p class="message-text">{{ msg.content }}</p>
+                  @if (msg.sources?.length) {
+                    <mat-divider />
+                    <p class="sources-label">Sources</p>
+                    @for (src of msg.sources!; track src.chunkId) {
+                      <p class="source-item">
+                        <mat-icon inline>auto_stories</mat-icon>
+                        {{ src.bookTitle }}
+                        @if (src.chapter) { — {{ src.chapter }} }
+                      </p>
+                    }
+                  }
+                </mat-card-content>
+              </mat-card>
+            </div>
+          }
+
+          @if (loading()) {
+            <div class="message message-assistant">
+              <mat-card class="message-card assistant-card loading-card">
+                <mat-card-content>
+                  <mat-progress-bar mode="indeterminate" />
+                </mat-card-content>
+              </mat-card>
+            </div>
+          }
+        </div>
+      } @else {
+        <div class="empty-state">
+          <mat-icon class="empty-icon">chat_bubble_outline</mat-icon>
+          <p>Ask anything about your books</p>
+        </div>
+      }
+    }
+
+    <!-- Search Results (Search mode) -->
+    @if (mode() === 'search') {
+      @if (searchResults().length) {
+        <p class="results-meta">{{ searchResults().length }} results in {{ searchTook() }}ms</p>
+        <div class="results-list">
+          @for (result of searchResults(); track result.chunkId) {
+            <mat-card class="result-card">
+              <mat-card-header>
+                <mat-card-title>{{ result.bookTitle }}</mat-card-title>
+                <mat-card-subtitle>
+                  {{ result.author }}
+                  @if (result.chapter) { · {{ result.chapter }} }
+                </mat-card-subtitle>
+                <span class="score-badge">{{ (result.score * 100).toFixed(0) }}%</span>
+              </mat-card-header>
+              <mat-card-content>
+                <p class="result-content">{{ result.content | slice:0:400 }}{{ result.content.length > 400 ? '…' : '' }}</p>
+              </mat-card-content>
+            </mat-card>
+          }
+        </div>
+      } @else if (!loading()) {
+        <div class="empty-state">
+          <mat-icon class="empty-icon">search</mat-icon>
+          <p>Search semantically through your books</p>
+        </div>
+      }
+    }
+
+  </div>
+
+  <!-- Input Bar -->
+  <div class="input-bar">
+    <mat-form-field appearance="outline" class="input-field">
+      <mat-icon matPrefix>{{ mode() === 'ask' ? 'chat' : 'search' }}</mat-icon>
+      <input
+        matInput
+        [(ngModel)]="query"
+        (keydown.enter)="submit()"
+        [placeholder]="mode() === 'ask' ? 'Ask a question about your books...' : 'Semantic search...'"
+      />
+    </mat-form-field>
+    <button
+      mat-flat-button
+      color="primary"
+      (click)="submit()"
+      [disabled]="loading() || !query.trim()">
+      {{ mode() === 'ask' ? 'Ask' : 'Search' }}
+    </button>
+  </div>
+
+</div>

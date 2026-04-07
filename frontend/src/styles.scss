@@ -22,3 +22,9 @@ html, body {
   background-color: #0f0f13;
   color: #e5e7eb;
 }
+
+app-root {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}

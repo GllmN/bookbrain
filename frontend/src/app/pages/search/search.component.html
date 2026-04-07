@@ -1,0 +1,13 @@
+<div class="search-layout">
+  <app-history-panel
+    [sessions]="sessions()"
+    [activeId]="activeSessionId()"
+    (sessionSelected)="selectSession($event)"
+    (newChat)="startNewChat()" />
+
+  <app-search-view
+    [session]="activeSession()"
+    [books]="books()"
+    [loading]="loading()"
+    (submitted)="onSubmit($event)" />
+</div>

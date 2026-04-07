@@ -42,7 +42,22 @@ export interface ChatMessage {
   role: 'user' | 'assistant';
   content: string;
   sources?: SearchResult[];
-  timestamp: Date;
+  timestamp: string; // ISO string for JSON serialization
+}
+
+// ── History ───────────────────────────────────────
+
+export interface HistorySession {
+  id: string;
+  type: 'ask' | 'search';
+  title: string;
+  createdAt: string;
+  // ask mode
+  messages?: ChatMessage[];
+  // search mode
+  searchQuery?: string;
+  searchResults?: SearchResult[];
+  searchTook?: number;
 }
 
 // ── Ingest ────────────────────────────────────────
