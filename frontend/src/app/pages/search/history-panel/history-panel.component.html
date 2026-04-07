@@ -1,0 +1,62 @@
+<div class="panel" [class.collapsed]="collapsed()">
+  <div class="panel-header">
+    @if (!collapsed()) {
+      <span class="panel-title">History</span>
+    }
+    <button mat-icon-button
+      (click)="collapsed.set(!collapsed())"
+      [matTooltip]="collapsed() ? 'Open history' : 'Close history'">
+      <mat-icon>{{ collapsed() ? 'menu' : 'menu_open' }}</mat-icon>
+    </button>
+  </div>
+
+  @if (!collapsed()) {
+    <div class="panel-actions">
+      <button mat-stroked-button class="new-btn" (click)="newChat.emit()">
+        <ng-container>
+          <mat-icon>add</mat-icon>
+          New
+        </ng-container>
+      </button>
+      @if (sessions().length > 0) {
+        <button mat-icon-button
+          class="clear-btn"
+          matTooltip="Clear all history"
+          (click)="clearAll.emit()">
+          <mat-icon>delete_sweep</mat-icon>
+        </button>
+      }
+    </div>
+
+    <div class="sessions-list">
+      @for (group of groups(); track group.label) {
+        <p class="group-label">{{ group.label }}</p>
+        @for (session of group.sessions; track session.id) {
+          <div class="session-row" [class.active]="session.id === activeId()">
+            <button
+              class="session-item"
+              (click)="sessionSelected.emit(session.id)">
+              <mat-icon class="session-icon">
+                {{ session.type === 'ask' ? 'chat_bubble_outline' : 'search' }}
+              </mat-icon>
+              <span class="session-title" [matTooltip]="session.title" matTooltipShowDelay="800">
+                {{ session.title }}
+              </span>
+            </button>
+            <button
+              mat-icon-button
+              class="delete-btn"
+              matTooltip="Delete"
+              (click)="$event.stopPropagation(); sessionDeleted.emit(session.id)">
+              <mat-icon>close</mat-icon>
+            </button>
+          </div>
+        }
+      }
+
+      @if (sessions().length === 0) {
+        <p class="empty-hint">No history yet</p>
+      }
+    </div>
+  }
+</div>

@@ -3,7 +3,9 @@
     [sessions]="sessions()"
     [activeId]="activeSessionId()"
     (sessionSelected)="selectSession($event)"
-    (newChat)="startNewChat()" />
+    (sessionDeleted)="deleteSession($event)"
+    (newChat)="startNewChat()"
+    (clearAll)="clearHistory()" />
 
   <app-search-view
     [session]="activeSession()"

@@ -64,6 +64,19 @@ export interface IngestStatus {
   errors: { file: string; error: string }[];
 }
 
+// ── History ───────────────────────────────────────
+
+export interface HistorySession {
+  id: string;
+  type: "ask" | "search";
+  title: string;
+  createdAt: string;
+  messages?: { role: "user" | "assistant"; content: string; sources?: SearchResult[]; timestamp: string }[];
+  searchQuery?: string;
+  searchResults?: SearchResult[];
+  searchTook?: number;
+}
+
 // ── API Envelope ──────────────────────────────────
 
 export interface ApiResponse<T = unknown> {

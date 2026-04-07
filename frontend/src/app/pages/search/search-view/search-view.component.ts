@@ -1,4 +1,4 @@
-import { Component, input, output, signal, computed, effect } from '@angular/core';
+import { Component, input, output, linkedSignal, computed, signal, effect, ViewChild, ElementRef } from '@angular/core';
 import { SlicePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MatCardModule } from '@angular/material/card';
@@ -34,13 +34,17 @@ import { Book, ChatMessage, HistorySession, SearchResult } from '../../../models
   styleUrl: './search-view.component.scss',
 })
 export class SearchViewComponent {
+  @ViewChild('contentArea') contentArea!: ElementRef<HTMLDivElement>;
+
   session = input<HistorySession | null>(null);
   books = input<Book[]>([]);
   loading = input(false);
 
   submitted = output<{ query: string; bookIds: string[]; mode: 'ask' | 'search' }>();
 
-  mode = signal<'ask' | 'search'>('ask');
+  // linkedSignal: se met à jour automatiquement quand session change,
+  // mais reste modifiable manuellement via le toggle
+  mode = linkedSignal<'ask' | 'search'>(() => this.session()?.type ?? 'ask');
   query = '';
   selectedBookIds = signal<string[]>([]);
 
@@ -49,9 +53,15 @@ export class SearchViewComponent {
   searchTook = computed<number>(() => this.session()?.searchTook ?? 0);
 
   constructor() {
+    // Auto-scroll vers le bas quand de nouveaux messages arrivent
     effect(() => {
-      const s = this.session();
-      if (s) this.mode.set(s.type);
+      const msgs = this.messages();
+      if (msgs.length > 0 && this.mode() === 'ask') {
+        setTimeout(() => {
+          const el = this.contentArea?.nativeElement;
+          if (el) el.scrollTop = el.scrollHeight;
+        });
+      }
     });
   }
 

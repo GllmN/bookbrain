@@ -2,10 +2,13 @@ import { Router, type Request, type Response, type NextFunction } from "express"
 import { z } from "zod";
 import { searchChunks, deleteBookChunks, getCollectionStats } from "../services/vectorStore.js";
 import { generateAnswer } from "../services/llm.js";
-import { getAllBooks, getBookById, deleteBook } from "../services/database.js";
+import {
+  getAllBooks, getBookById, deleteBook,
+  getAllSessions, getSessionById, insertSession, updateSession, deleteSession, clearAllSessions,
+} from "../services/database.js";
 import { runIngestion, getIngestStatus } from "../services/ingest.js";
 import { AppError } from "../utils/errors.js";
-import type { ApiResponse } from "../models/types.js";
+import type { ApiResponse, HistorySession } from "../models/types.js";
 
 export const router = Router();
 
@@ -109,6 +112,71 @@ router.post("/ask", wrap(async (req, res) => {
     success: true,
     data: { answer, sources, model },
   } satisfies ApiResponse);
+}));
+
+// ── History ───────────────────────────────────────
+
+const createSessionSchema = z.object({
+  id: z.string().uuid(),
+  type: z.enum(["ask", "search"]),
+  title: z.string().min(1).max(200),
+  createdAt: z.string(),
+});
+
+const patchSessionSchema = z.object({
+  messages: z.array(z.object({
+    role: z.enum(["user", "assistant"]),
+    content: z.string(),
+    sources: z.array(z.any()).optional(),
+    timestamp: z.string(),
+  })).optional(),
+  searchResults: z.array(z.any()).optional(),
+  searchTook: z.number().optional(),
+});
+
+router.get("/history", wrap(async (_req, res) => {
+  const sessions = getAllSessions();
+  res.json({ success: true, data: { sessions } } satisfies ApiResponse);
+}));
+
+router.post("/history", wrap(async (req, res) => {
+  const parsed = createSessionSchema.safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({ success: false, error: parsed.error.message } satisfies ApiResponse);
+    return;
+  }
+  const session: HistorySession = { ...parsed.data, messages: parsed.data.type === "ask" ? [] : undefined };
+  insertSession(session);
+  res.status(201).json({ success: true, data: session } satisfies ApiResponse);
+}));
+
+router.patch("/history/:id", wrap(async (req, res) => {
+  const session = getSessionById(req.params.id);
+  if (!session) {
+    res.status(404).json({ success: false, error: "Session not found" } satisfies ApiResponse);
+    return;
+  }
+  const parsed = patchSessionSchema.safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({ success: false, error: parsed.error.message } satisfies ApiResponse);
+    return;
+  }
+  updateSession(req.params.id, parsed.data);
+  res.json({ success: true, data: { updated: req.params.id } } satisfies ApiResponse);
+}));
+
+router.delete("/history/:id", wrap(async (req, res) => {
+  const deleted = deleteSession(req.params.id);
+  if (!deleted) {
+    res.status(404).json({ success: false, error: "Session not found" } satisfies ApiResponse);
+    return;
+  }
+  res.json({ success: true, data: { deleted: req.params.id } } satisfies ApiResponse);
+}));
+
+router.delete("/history", wrap(async (_req, res) => {
+  clearAllSessions();
+  res.json({ success: true, data: { cleared: true } } satisfies ApiResponse);
 }));
 
 // ── Ingest ────────────────────────────────────────

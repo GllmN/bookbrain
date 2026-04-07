@@ -7,6 +7,7 @@ import {
   SearchResponse,
   AskResponse,
   IngestStatus,
+  HistorySession,
 } from '../models/types';
 
 @Injectable({ providedIn: 'root' })
@@ -60,6 +61,38 @@ export class ApiService {
         history,
       })
       .pipe(map((res) => res.data!));
+  }
+
+  // ── History ───────────────────────────────────────
+
+  getHistory(): Observable<HistorySession[]> {
+    return this.http
+      .get<ApiResponse<{ sessions: HistorySession[] }>>(`${this.baseUrl}/history`)
+      .pipe(map((res) => res.data!.sessions));
+  }
+
+  createSession(session: Pick<HistorySession, 'id' | 'type' | 'title' | 'createdAt'>): Observable<HistorySession> {
+    return this.http
+      .post<ApiResponse<HistorySession>>(`${this.baseUrl}/history`, session)
+      .pipe(map((res) => res.data!));
+  }
+
+  updateSession(id: string, patch: Partial<Pick<HistorySession, 'messages' | 'searchResults' | 'searchTook'>>): Observable<void> {
+    return this.http
+      .patch<ApiResponse>(`${this.baseUrl}/history/${id}`, patch)
+      .pipe(map(() => undefined));
+  }
+
+  deleteHistorySession(id: string): Observable<void> {
+    return this.http
+      .delete<ApiResponse>(`${this.baseUrl}/history/${id}`)
+      .pipe(map(() => undefined));
+  }
+
+  clearHistory(): Observable<void> {
+    return this.http
+      .delete<ApiResponse>(`${this.baseUrl}/history`)
+      .pipe(map(() => undefined));
   }
 
   // ── Ingest ────────────────────────────────────

@@ -1,6 +1,6 @@
 import Database from "better-sqlite3";
 import { config } from "../config/index.js";
-import type { Book } from "../models/types.js";
+import type { Book, HistorySession } from "../models/types.js";
 
 let db: Database.Database;
 
@@ -25,6 +25,17 @@ function initSchema(): void {
       total_chunks INTEGER NOT NULL DEFAULT 0,
       indexed_at TEXT NOT NULL,
       cover_path TEXT
+    );
+
+    CREATE TABLE IF NOT EXISTS history_sessions (
+      id TEXT PRIMARY KEY,
+      type TEXT NOT NULL CHECK(type IN ('ask', 'search')),
+      title TEXT NOT NULL,
+      created_at TEXT NOT NULL,
+      messages TEXT,
+      search_query TEXT,
+      search_results TEXT,
+      search_took INTEGER
     );
   `);
 }
@@ -61,6 +72,77 @@ export function isFileIndexed(filePath: string): boolean {
   const row = database.prepare("SELECT 1 FROM books WHERE file_path = ?").get(filePath);
   return !!row;
 }
+
+// ── History ───────────────────────────────────────
+
+export function getAllSessions(): HistorySession[] {
+  const database = getDb();
+  const rows = database.prepare(
+    "SELECT * FROM history_sessions ORDER BY created_at DESC"
+  ).all() as any[];
+  return rows.map(mapSession);
+}
+
+export function getSessionById(id: string): HistorySession | undefined {
+  const database = getDb();
+  const row = database.prepare("SELECT * FROM history_sessions WHERE id = ?").get(id) as any;
+  return row ? mapSession(row) : undefined;
+}
+
+export function insertSession(session: HistorySession): void {
+  const database = getDb();
+  database.prepare(`
+    INSERT INTO history_sessions (id, type, title, created_at, messages, search_query, search_results, search_took)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+  `).run(
+    session.id,
+    session.type,
+    session.title,
+    session.createdAt,
+    session.messages ? JSON.stringify(session.messages) : null,
+    session.searchQuery ?? null,
+    session.searchResults ? JSON.stringify(session.searchResults) : null,
+    session.searchTook ?? null,
+  );
+}
+
+export function updateSession(id: string, patch: Partial<Pick<HistorySession, "messages" | "searchResults" | "searchTook">>): void {
+  const database = getDb();
+  if (patch.messages !== undefined) {
+    database.prepare("UPDATE history_sessions SET messages = ? WHERE id = ?")
+      .run(JSON.stringify(patch.messages), id);
+  }
+  if (patch.searchResults !== undefined) {
+    database.prepare("UPDATE history_sessions SET search_results = ?, search_took = ? WHERE id = ?")
+      .run(JSON.stringify(patch.searchResults), patch.searchTook ?? null, id);
+  }
+}
+
+export function deleteSession(id: string): boolean {
+  const database = getDb();
+  const result = database.prepare("DELETE FROM history_sessions WHERE id = ?").run(id);
+  return result.changes > 0;
+}
+
+export function clearAllSessions(): void {
+  const database = getDb();
+  database.prepare("DELETE FROM history_sessions").run();
+}
+
+function mapSession(row: any): HistorySession {
+  return {
+    id: row.id,
+    type: row.type,
+    title: row.title,
+    createdAt: row.created_at,
+    messages: row.messages ? JSON.parse(row.messages) : undefined,
+    searchQuery: row.search_query ?? undefined,
+    searchResults: row.search_results ? JSON.parse(row.search_results) : undefined,
+    searchTook: row.search_took ?? undefined,
+  };
+}
+
+// ── Books ─────────────────────────────────────────
 
 function mapRow(row: any): Book {
   return {
