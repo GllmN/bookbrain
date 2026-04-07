@@ -19,7 +19,7 @@ export async function runIngestion(force: boolean = false): Promise<IngestStatus
   currentStatus = { total: 0, processed: 0, failed: 0, errors: [] };
 
   const forceFlag = force ? "--force" : "";
-  const cmd = `python3 ${path.join(SCRIPTS_DIR, "ingest.py")} --input "${config.libraryPath}" ${forceFlag} --json`;
+  const cmd = `python3 ${path.join(SCRIPTS_DIR, "ingest.py")} --input "${config.libraryPath}" --db "${config.sqlitePath}" ${forceFlag} --json`;
 
   try {
     const { stdout, stderr } = await execAsync(cmd, {

@@ -36,12 +36,14 @@ def extract_pdf(file_path: Path) -> list[ExtractedChapter]:
                 text += doc[p].get_text()
             if text.strip():
                 chapters.append(ExtractedChapter(title=title, content=text.strip(), page=page))
-        doc.close()
-        return chapters if chapters else _extract_pdf_flat(doc, file_path)
-    else:
-        result = _extract_pdf_flat(doc, file_path)
-        doc.close()
-        return result
+        if chapters:
+            doc.close()
+            return chapters
+        # TOC present but no text extracted — fall through to flat extraction
+
+    result = _extract_pdf_flat(doc, file_path)
+    doc.close()
+    return result
 
 
 def _extract_pdf_flat(doc: fitz.Document, file_path: Path) -> list[ExtractedChapter]:

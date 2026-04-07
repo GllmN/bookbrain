@@ -10,6 +10,7 @@ Usage:
 
 import argparse
 import json
+import os
 import sqlite3
 import sys
 import uuid
@@ -31,7 +32,9 @@ SUPPORTED_EXTENSIONS = {".pdf", ".epub"}
 
 
 def get_chroma_client() -> chromadb.HttpClient:
-    return chromadb.HttpClient(host="localhost", port=8000)
+    host = os.getenv("CHROMA_HOST", "localhost")
+    port = int(os.getenv("CHROMA_PORT", "8000"))
+    return chromadb.HttpClient(host=host, port=port)
 
 
 def get_sqlite(db_path: str) -> sqlite3.Connection:
