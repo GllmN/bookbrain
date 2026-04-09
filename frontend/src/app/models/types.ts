@@ -45,6 +45,14 @@ export interface ChatMessage {
   timestamp: string; // ISO string for JSON serialization
 }
 
+// ── Ask streaming ─────────────────────────────────
+
+export type AskStreamEvent =
+  | { type: 'sources'; sources: SearchResult[] }
+  | { type: 'token'; content: string }
+  | { type: 'done'; model: string }
+  | { type: 'error'; message: string };
+
 // ── History ───────────────────────────────────────
 
 export interface HistorySession {

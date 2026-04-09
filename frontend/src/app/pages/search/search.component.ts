@@ -1,6 +1,6 @@
 import { Component, inject, signal, computed } from '@angular/core';
 import { ApiService } from '../../services/api.service';
-import { Book, ChatMessage, HistorySession } from '../../models/types';
+import { Book, ChatMessage, HistorySession, SearchResult } from '../../models/types';
 import { HistoryPanelComponent } from './history-panel/history-panel.component';
 import { SearchViewComponent } from './search-view/search-view.component';
 
@@ -88,27 +88,59 @@ export class SearchComponent {
         .slice(-10)
         .map(m => ({ role: m.role as 'user' | 'assistant', content: m.content }));
 
-      this.api.ask(query, ids, history).subscribe({
-        next: (res) => {
-          const assistantMsg: ChatMessage = {
-            role: 'assistant',
-            content: res.answer,
-            sources: res.sources,
-            timestamp: new Date().toISOString(),
-          };
-          this.appendMessage(sessionId!, assistantMsg);
+      let sources: SearchResult[] = [];
+      let messageAdded = false;
+
+      this.api.streamAsk(query, ids, history).subscribe({
+        next: (event) => {
+          if (event.type === 'sources') {
+            sources = event.sources;
+          } else if (event.type === 'token') {
+            if (!messageAdded) {
+              this.loading.set(false);
+              this.appendMessage(sessionId!, {
+                role: 'assistant',
+                content: event.content,
+                timestamp: new Date().toISOString(),
+              });
+              messageAdded = true;
+            } else {
+              this.appendToken(sessionId!, event.content);
+            }
+          } else if (event.type === 'error') {
+            this.loading.set(false);
+            this.appendMessage(sessionId!, {
+              role: 'assistant',
+              content: 'Erreur lors de la génération de la réponse.',
+              timestamp: new Date().toISOString(),
+            });
+          }
+        },
+        complete: () => {
+          if (!messageAdded) {
+            this.loading.set(false);
+            this.appendMessage(sessionId!, {
+              role: 'assistant',
+              content: sources.length
+                ? 'Le modèle n\'a pas généré de réponse. Essaie à nouveau.'
+                : 'Je n\'ai trouvé aucun passage pertinent dans tes livres pour cette question.',
+              sources,
+              timestamp: new Date().toISOString(),
+            });
+          } else if (sources.length) {
+            this.updateLastMessage(sessionId!, { sources });
+          }
           this.api.updateSession(sessionId!, { messages: this.activeSession()?.messages }).subscribe();
-          this.loading.set(false);
         },
         error: () => {
-          const errMsg: ChatMessage = {
-            role: 'assistant',
-            content: 'Erreur lors de la génération de la réponse.',
-            timestamp: new Date().toISOString(),
-          };
-          this.appendMessage(sessionId!, errMsg);
-          this.api.updateSession(sessionId!, { messages: this.activeSession()?.messages }).subscribe();
           this.loading.set(false);
+          if (!messageAdded) {
+            this.appendMessage(sessionId!, {
+              role: 'assistant',
+              content: 'Erreur lors de la génération de la réponse.',
+              timestamp: new Date().toISOString(),
+            });
+          }
         },
       });
     }
@@ -138,6 +170,34 @@ export class SearchComponent {
           ? { ...s, messages: [...(s.messages ?? []), message] }
           : s
       )
+    );
+  }
+
+  private appendToken(sessionId: string, token: string) {
+    this.sessions.update(list =>
+      list.map(s => {
+        if (s.id !== sessionId) return s;
+        const messages = [...(s.messages ?? [])];
+        const last = messages[messages.length - 1];
+        if (last?.role === 'assistant') {
+          messages[messages.length - 1] = { ...last, content: last.content + token };
+        }
+        return { ...s, messages };
+      })
+    );
+  }
+
+  private updateLastMessage(sessionId: string, patch: Partial<ChatMessage>) {
+    this.sessions.update(list =>
+      list.map(s => {
+        if (s.id !== sessionId) return s;
+        const messages = [...(s.messages ?? [])];
+        const lastIdx = messages.length - 1;
+        if (lastIdx >= 0 && messages[lastIdx].role === 'assistant') {
+          messages[lastIdx] = { ...messages[lastIdx], ...patch };
+        }
+        return { ...s, messages };
+      })
     );
   }
 }

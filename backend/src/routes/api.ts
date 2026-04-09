@@ -1,7 +1,8 @@
 import { Router, type Request, type Response, type NextFunction } from "express";
 import { z } from "zod";
 import { searchChunks, deleteBookChunks, getCollectionStats } from "../services/vectorStore.js";
-import { generateAnswer } from "../services/llm.js";
+import { generateAnswer, streamAnswer } from "../services/llm.js";
+import { config } from "../config/index.js";
 import {
   getAllBooks, getBookById, deleteBook,
   getAllSessions, getSessionById, insertSession, updateSession, deleteSession, clearAllSessions,
@@ -113,6 +114,53 @@ router.post("/ask", wrap(async (req, res) => {
     data: { answer, sources, model },
   } satisfies ApiResponse);
 }));
+
+// ── Ask streaming (SSE) ───────────────────────────
+
+router.post("/ask/stream", async (req, res) => {
+  const parsed = askSchema.safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({ success: false, error: parsed.error.message } satisfies ApiResponse);
+    return;
+  }
+
+  res.setHeader("Content-Type", "text/event-stream");
+  res.setHeader("Cache-Control", "no-cache");
+  res.setHeader("Connection", "keep-alive");
+  res.setHeader("X-Accel-Buffering", "no");
+  res.flushHeaders();
+
+  const send = (data: object) => res.write(`data: ${JSON.stringify(data)}\n\n`);
+
+  let cancelled = false;
+  res.on("close", () => { cancelled = true; });
+
+  try {
+    const { question, bookIds, history } = parsed.data;
+    const sources = await searchChunks(question, 8, bookIds);
+
+    if (sources.length === 0) {
+      send({ type: "done", answer: "Je n'ai trouvé aucun passage pertinent dans tes livres pour cette question.", sources: [], model: "none" });
+    } else {
+      send({ type: "sources", sources });
+
+      for await (const token of streamAnswer(question, sources, history)) {
+        if (cancelled) break;
+        send({ type: "token", content: token });
+      }
+
+      if (!cancelled) {
+        const model = config.llmProvider === "anthropic" ? "claude-sonnet-4-6" : config.ollama.model;
+        send({ type: "done", model });
+      }
+    }
+  } catch (err: any) {
+    send({ type: "error", message: err.message ?? "Streaming error" });
+  }
+
+  res.write("data: [DONE]\n\n");
+  res.end();
+});
 
 // ── History ───────────────────────────────────────
 

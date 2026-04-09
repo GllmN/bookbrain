@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable, map } from 'rxjs';
 import {
   ApiResponse,
+  AskStreamEvent,
   Book,
   SearchResponse,
   AskResponse,
@@ -61,6 +62,57 @@ export class ApiService {
         history,
       })
       .pipe(map((res) => res.data!));
+  }
+
+  // ── Ask streaming ─────────────────────────────────
+
+  streamAsk(
+    question: string,
+    bookIds?: string[],
+    history?: { role: 'user' | 'assistant'; content: string }[]
+  ): Observable<AskStreamEvent> {
+    return new Observable<AskStreamEvent>(subscriber => {
+      const controller = new AbortController();
+
+      fetch(`${this.baseUrl}/ask/stream`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ question, bookIds, history }),
+        signal: controller.signal,
+      }).then(async response => {
+        if (!response.ok) {
+          subscriber.error(new Error(`HTTP ${response.status}`));
+          return;
+        }
+
+        const reader = response.body!.getReader();
+        const decoder = new TextDecoder();
+        let buffer = '';
+
+        try {
+          while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+
+            buffer += decoder.decode(value, { stream: true });
+            const lines = buffer.split('\n');
+            buffer = lines.pop() ?? '';
+
+            for (const line of lines) {
+              if (!line.startsWith('data: ')) continue;
+              const data = line.slice(6).trim();
+              if (data === '[DONE]') { subscriber.complete(); return; }
+              subscriber.next(JSON.parse(data) as AskStreamEvent);
+            }
+          }
+          subscriber.complete();
+        } catch (err) {
+          subscriber.error(err);
+        }
+      }).catch(err => subscriber.error(err));
+
+      return () => controller.abort();
+    });
   }
 
   // ── History ───────────────────────────────────────
