@@ -12,6 +12,20 @@
         Search
       </mat-button-toggle>
     </mat-button-toggle-group>
+
+    @if (mode() === 'ask' && models().length) {
+      <mat-form-field appearance="outline" class="model-select">
+        <mat-label>Model</mat-label>
+        <mat-select [value]="selectedModel()" (selectionChange)="modelChange.emit($event.value)">
+          @for (model of models(); track model.id) {
+            <mat-option [value]="model.id">
+              <mat-icon>{{ model.provider === 'anthropic' ? 'cloud' : 'memory' }}</mat-icon>
+              {{ model.name }}
+            </mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+    }
   </div>
 
   <!-- Book Filter -->

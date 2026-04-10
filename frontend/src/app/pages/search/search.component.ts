@@ -1,6 +1,6 @@
 import { Component, inject, signal, computed } from '@angular/core';
 import { ApiService } from '../../services/api.service';
-import { Book, ChatMessage, HistorySession, SearchResult } from '../../models/types';
+import { Book, ChatMessage, HistorySession, LlmModel, SearchResult } from '../../models/types';
 import { HistoryPanelComponent } from './history-panel/history-panel.component';
 import { SearchViewComponent } from './search-view/search-view.component';
 
@@ -18,6 +18,8 @@ export class SearchComponent {
   activeSessionId = signal<string | null>(null);
   loading = signal(false);
   books = signal<Book[]>([]);
+  models = signal<LlmModel[]>([]);
+  selectedModel = signal<string>('');
 
   activeSession = computed(() =>
     this.sessions().find(s => s.id === this.activeSessionId()) ?? null
@@ -26,6 +28,12 @@ export class SearchComponent {
   constructor() {
     this.api.getBooks().subscribe({ next: (data) => this.books.set(data.books) });
     this.api.getHistory().subscribe({ next: (sessions) => this.sessions.set(sessions) });
+    this.api.getModels().subscribe({
+      next: (data) => {
+        this.models.set(data.models);
+        this.selectedModel.set(data.current);
+      },
+    });
   }
 
   selectSession(id: string) {
@@ -91,7 +99,8 @@ export class SearchComponent {
       let sources: SearchResult[] = [];
       let messageAdded = false;
 
-      this.api.streamAsk(query, ids, history).subscribe({
+      const model = this.selectedModel() || undefined;
+      this.api.streamAsk(query, ids, history, model).subscribe({
         next: (event) => {
           if (event.type === 'sources') {
             sources = event.sources;

@@ -72,11 +72,37 @@ router.post("/search", wrap(async (req, res) => {
   } satisfies ApiResponse);
 }));
 
+// ── Models ────────────────────────────────────────
+
+router.get("/models", wrap(async (_req, res) => {
+  const models: { id: string; name: string; provider: "ollama" | "anthropic" }[] = [];
+
+  try {
+    const r = await fetch(`${config.ollama.baseUrl}/api/tags`);
+    if (r.ok) {
+      const data = (await r.json()) as { models: { name: string }[] };
+      for (const m of data.models ?? []) {
+        if (!m.name.includes("embed")) {
+          models.push({ id: m.name, name: m.name, provider: "ollama" });
+        }
+      }
+    }
+  } catch { /* Ollama unreachable */ }
+
+  if (config.anthropic.apiKey) {
+    models.push({ id: "claude-sonnet-4-6", name: "Claude Sonnet 4.6", provider: "anthropic" });
+  }
+
+  const current = config.llmProvider === "anthropic" ? "claude-sonnet-4-6" : config.ollama.model;
+  res.json({ success: true, data: { models, current } } satisfies ApiResponse);
+}));
+
 // ── Ask (RAG Q&A) ────────────────────────────────
 
 const askSchema = z.object({
   question: z.string().min(1).max(2000),
   bookIds: z.array(z.string()).optional(),
+  model: z.string().optional(),
   history: z
     .array(z.object({ role: z.enum(["user", "assistant"]), content: z.string() }))
     .optional()
@@ -90,7 +116,7 @@ router.post("/ask", wrap(async (req, res) => {
     return;
   }
 
-  const { question, bookIds, history } = parsed.data;
+  const { question, bookIds, history, model: requestedModel } = parsed.data;
 
   // 1. Retrieve relevant chunks
   const sources = await searchChunks(question, 8, bookIds);
@@ -107,7 +133,7 @@ router.post("/ask", wrap(async (req, res) => {
   }
 
   // 2. Generate answer with LLM
-  const { answer, model } = await generateAnswer(question, sources, history);
+  const { answer, model } = await generateAnswer(question, sources, history, requestedModel);
 
   res.json({
     success: true,
@@ -136,7 +162,7 @@ router.post("/ask/stream", async (req, res) => {
   res.on("close", () => { cancelled = true; });
 
   try {
-    const { question, bookIds, history } = parsed.data;
+    const { question, bookIds, history, model: requestedModel } = parsed.data;
     const sources = await searchChunks(question, 8, bookIds);
 
     if (sources.length === 0) {
@@ -144,13 +170,13 @@ router.post("/ask/stream", async (req, res) => {
     } else {
       send({ type: "sources", sources });
 
-      for await (const token of streamAnswer(question, sources, history)) {
+      for await (const token of streamAnswer(question, sources, history, requestedModel)) {
         if (cancelled) break;
         send({ type: "token", content: token });
       }
 
       if (!cancelled) {
-        const model = config.llmProvider === "anthropic" ? "claude-sonnet-4-6" : config.ollama.model;
+        const model = requestedModel ?? (config.llmProvider === "anthropic" ? "claude-sonnet-4-6" : config.ollama.model);
         send({ type: "done", model });
       }
     }

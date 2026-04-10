@@ -35,36 +35,42 @@ Règles:
 export async function generateAnswer(
   question: string,
   context: SearchResult[],
-  history: { role: "user" | "assistant"; content: string }[] = []
+  history: { role: "user" | "assistant"; content: string }[] = [],
+  model?: string
 ): Promise<LLMResponse> {
   const { system, user } = buildPrompts(question, context);
-  if (config.llmProvider === "anthropic") return callClaude(system, user, history);
-  return callOllama(system, user, history);
+  const useAnthropic = model ? model.startsWith("claude-") : config.llmProvider === "anthropic";
+  if (useAnthropic) return callClaude(system, user, history, model);
+  return callOllama(system, user, history, model);
 }
 
 async function callOllama(
   system: string,
   prompt: string,
-  history: { role: string; content: string }[]
+  history: { role: string; content: string }[],
+  model?: string
 ): Promise<LLMResponse> {
+  const resolvedModel = model ?? config.ollama.model;
   const messages = [{ role: "system", content: system }, ...history, { role: "user", content: prompt }];
 
   const res = await fetch(`${config.ollama.baseUrl}/api/chat`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ model: config.ollama.model, messages, stream: false }),
+    body: JSON.stringify({ model: resolvedModel, messages, stream: false }),
   });
 
   if (!res.ok) throw new Error(`Ollama error: ${res.statusText}`);
   const data = (await res.json()) as any;
-  return { answer: data.message?.content ?? "", model: config.ollama.model };
+  return { answer: data.message?.content ?? "", model: resolvedModel };
 }
 
 async function callClaude(
   system: string,
   prompt: string,
-  history: { role: string; content: string }[]
+  history: { role: string; content: string }[],
+  model?: string
 ): Promise<LLMResponse> {
+  const resolvedModel = model ?? CLAUDE_MODEL;
   const messages = [
     ...history.map((m) => ({ role: m.role, content: m.content })),
     { role: "user", content: prompt },
@@ -77,12 +83,12 @@ async function callClaude(
       "x-api-key": config.anthropic.apiKey,
       "anthropic-version": "2023-06-01",
     },
-    body: JSON.stringify({ model: CLAUDE_MODEL, max_tokens: 2048, system, messages }),
+    body: JSON.stringify({ model: resolvedModel, max_tokens: 2048, system, messages }),
   });
 
   if (!res.ok) throw new Error(`Claude API error: ${res.statusText}`);
   const data = (await res.json()) as any;
-  return { answer: data.content?.[0]?.text ?? "", model: CLAUDE_MODEL };
+  return { answer: data.content?.[0]?.text ?? "", model: resolvedModel };
 }
 
 // ── Streaming ─────────────────────────────────────
@@ -90,27 +96,31 @@ async function callClaude(
 export async function* streamAnswer(
   question: string,
   context: SearchResult[],
-  history: { role: "user" | "assistant"; content: string }[] = []
+  history: { role: "user" | "assistant"; content: string }[] = [],
+  model?: string
 ): AsyncGenerator<string> {
   const { system, user } = buildPrompts(question, context);
-  if (config.llmProvider === "anthropic") {
-    yield* streamClaude(system, user, history);
+  const useAnthropic = model ? model.startsWith("claude-") : config.llmProvider === "anthropic";
+  if (useAnthropic) {
+    yield* streamClaude(system, user, history, model);
   } else {
-    yield* streamOllama(system, user, history);
+    yield* streamOllama(system, user, history, model);
   }
 }
 
 async function* streamOllama(
   system: string,
   prompt: string,
-  history: { role: string; content: string }[]
+  history: { role: string; content: string }[],
+  model?: string
 ): AsyncGenerator<string> {
+  const resolvedModel = model ?? config.ollama.model;
   const messages = [{ role: "system", content: system }, ...history, { role: "user", content: prompt }];
 
   const res = await fetch(`${config.ollama.baseUrl}/api/chat`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ model: config.ollama.model, messages, stream: true }),
+    body: JSON.stringify({ model: resolvedModel, messages, stream: true }),
   });
 
   if (!res.ok) {
@@ -145,8 +155,10 @@ async function* streamOllama(
 async function* streamClaude(
   system: string,
   prompt: string,
-  history: { role: string; content: string }[]
+  history: { role: string; content: string }[],
+  model?: string
 ): AsyncGenerator<string> {
+  const resolvedModel = model ?? CLAUDE_MODEL;
   const messages = [
     ...history.map((m) => ({ role: m.role, content: m.content })),
     { role: "user", content: prompt },
@@ -159,7 +171,7 @@ async function* streamClaude(
       "x-api-key": config.anthropic.apiKey,
       "anthropic-version": "2023-06-01",
     },
-    body: JSON.stringify({ model: CLAUDE_MODEL, max_tokens: 2048, system, messages, stream: true }),
+    body: JSON.stringify({ model: resolvedModel, max_tokens: 2048, system, messages, stream: true }),
   });
 
   if (!res.ok) throw new Error(`Claude API error: ${res.statusText}`);

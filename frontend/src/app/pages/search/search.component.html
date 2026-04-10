@@ -11,5 +11,8 @@
     [session]="activeSession()"
     [books]="books()"
     [loading]="loading()"
+    [models]="models()"
+    [selectedModel]="selectedModel()"
+    (modelChange)="selectedModel.set($event)"
     (submitted)="onSubmit($event)" />
 </div>

@@ -11,7 +11,8 @@ import { MatChipsModule } from '@angular/material/chips';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatExpansionModule } from '@angular/material/expansion';
-import { Book, ChatMessage, HistorySession, SearchResult } from '../../../models/types';
+import { MatSelectModule } from '@angular/material/select';
+import { Book, ChatMessage, HistorySession, LlmModel, SearchResult } from '../../../models/types';
 
 @Component({
   selector: 'app-search-view',
@@ -29,6 +30,7 @@ import { Book, ChatMessage, HistorySession, SearchResult } from '../../../models
     MatProgressBarModule,
     MatDividerModule,
     MatExpansionModule,
+    MatSelectModule,
   ],
   templateUrl: './search-view.component.html',
   styleUrl: './search-view.component.scss',
@@ -39,8 +41,11 @@ export class SearchViewComponent {
   session = input<HistorySession | null>(null);
   books = input<Book[]>([]);
   loading = input(false);
+  models = input<LlmModel[]>([]);
+  selectedModel = input('');
 
   submitted = output<{ query: string; bookIds: string[]; mode: 'ask' | 'search' }>();
+  modelChange = output<string>();
 
   // linkedSignal: se met à jour automatiquement quand session change,
   // mais reste modifiable manuellement via le toggle

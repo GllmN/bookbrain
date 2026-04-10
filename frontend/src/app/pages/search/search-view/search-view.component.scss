@@ -17,6 +17,18 @@
 .view-controls {
   padding: 16px 24px 0;
   flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.model-select {
+  width: 200px;
+  margin: 0;
+
+  // Align with the toggle height
+  .mat-mdc-form-field-subscript-wrapper { display: none; }
 }
 
 .filter-panel {

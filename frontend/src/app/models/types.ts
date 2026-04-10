@@ -77,6 +77,14 @@ export interface IngestStatus {
   errors: { file: string; error: string }[];
 }
 
+// ── Models ────────────────────────────────────────
+
+export interface LlmModel {
+  id: string;
+  name: string;
+  provider: 'ollama' | 'anthropic';
+}
+
 // ── API Envelope ──────────────────────────────────
 
 export interface ApiResponse<T = unknown> {

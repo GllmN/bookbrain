@@ -5,6 +5,7 @@ import {
   ApiResponse,
   AskStreamEvent,
   Book,
+  LlmModel,
   SearchResponse,
   AskResponse,
   IngestStatus,
@@ -36,6 +37,12 @@ export class ApiService {
       .pipe(map(() => undefined));
   }
 
+  getModels(): Observable<{ models: LlmModel[]; current: string }> {
+    return this.http
+      .get<ApiResponse<{ models: LlmModel[]; current: string }>>(`${this.baseUrl}/models`)
+      .pipe(map((res) => res.data!));
+  }
+
   // ── Search ────────────────────────────────────
 
   search(query: string, limit = 10, bookIds?: string[]): Observable<SearchResponse> {
@@ -53,13 +60,15 @@ export class ApiService {
   ask(
     question: string,
     bookIds?: string[],
-    history?: { role: 'user' | 'assistant'; content: string }[]
+    history?: { role: 'user' | 'assistant'; content: string }[],
+    model?: string
   ): Observable<AskResponse> {
     return this.http
       .post<ApiResponse<AskResponse>>(`${this.baseUrl}/ask`, {
         question,
         bookIds,
         history,
+        model,
       })
       .pipe(map((res) => res.data!));
   }
@@ -69,7 +78,8 @@ export class ApiService {
   streamAsk(
     question: string,
     bookIds?: string[],
-    history?: { role: 'user' | 'assistant'; content: string }[]
+    history?: { role: 'user' | 'assistant'; content: string }[],
+    model?: string
   ): Observable<AskStreamEvent> {
     return new Observable<AskStreamEvent>(subscriber => {
       const controller = new AbortController();
@@ -77,7 +87,7 @@ export class ApiService {
       fetch(`${this.baseUrl}/ask/stream`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ question, bookIds, history }),
+        body: JSON.stringify({ question, bookIds, history, model }),
         signal: controller.signal,
       }).then(async response => {
         if (!response.ok) {
