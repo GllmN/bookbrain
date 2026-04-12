@@ -1,8 +1,8 @@
 import { Component, inject, input, output, signal, computed } from '@angular/core';
-import { ModelService } from '../../../../core/services/model.service';
-import { BookPickerComponent } from '../../book-picker/book-picker.component';
-import { ModelPickerComponent } from '../../model-picker/model-picker.component';
-import { Book } from '../../../../core/models/types';
+import { ModelService } from '../../../core/services/model.service';
+import { BookPickerComponent } from './book-picker/book-picker.component';
+import { ModelPickerComponent } from './model-picker/model-picker.component';
+import { Book } from '../../../core/models/types';
 
 @Component({
   selector: 'app-header-filters',

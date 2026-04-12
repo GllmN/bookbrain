@@ -1,5 +1,5 @@
 import { Component, input, output, computed, HostListener } from '@angular/core';
-import { Book } from '../../../core/models/types';
+import { Book } from '../../../../core/models/types';
 
 @Component({
   selector: 'app-book-picker',
