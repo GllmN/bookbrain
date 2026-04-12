@@ -1,4 +1,4 @@
-import { Component, inject, signal, OnInit } from '@angular/core';
+import { Component, inject, signal, effect, OnInit, EffectRef } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { SlicePipe } from '@angular/common';
 import { ApiService } from '../../../core/services/api.service';
@@ -26,6 +26,15 @@ export class SearchComponent implements OnInit {
   query = '';
   lastQuery = signal('');
 
+  readonly #sessionRestore: EffectRef = effect(() => {
+    const session = this.#conversationService.activeSession();
+    if (session?.type !== 'search') return;
+    this.query = session.searchQuery ?? session.title;
+    this.lastQuery.set(session.searchQuery ?? session.title);
+    this.results.set(session.searchResults ?? []);
+    this.searchTook.set(session.searchTook ?? 0);
+  });
+
   ngOnInit() {
     this.#apiService.getBooks().subscribe({ next: (data) => this.books.set(data.books) });
   }
@@ -47,8 +56,8 @@ export class SearchComponent implements OnInit {
 
         const session = this.#conversationService.buildSession('search', q);
         this.#conversationService.createSession(session);
-        this.#conversationService.patchSession(session.id, { searchResults: res.results, searchTook: res.took });
-        this.#apiService.updateSession(session.id, { searchResults: res.results, searchTook: res.took }).subscribe();
+        this.#conversationService.patchSession(session.id, { searchQuery: q, searchResults: res.results, searchTook: res.took });
+        this.#apiService.updateSession(session.id, { searchQuery: q, searchResults: res.results, searchTook: res.took }).subscribe();
       },
       error: () => this.loading.set(false),
     });

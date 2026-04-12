@@ -143,7 +143,7 @@ export class ApiService {
 
   updateSession(
     id: string,
-    patch: Partial<Pick<HistorySession, 'messages' | 'searchResults' | 'searchTook'>>
+    patch: Partial<Pick<HistorySession, 'messages' | 'searchQuery' | 'searchResults' | 'searchTook'>>
   ): Observable<void> {
     return this.http
       .patch<ApiResponse>(`${this.baseUrl}/history/${id}`, patch)

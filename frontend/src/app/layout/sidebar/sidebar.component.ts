@@ -2,6 +2,7 @@ import { Component, inject, signal, computed, OnInit, DestroyRef } from '@angula
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { DecimalPipe, SlicePipe } from '@angular/common';
+import { Router } from '@angular/router';
 import { ConversationService } from '../../core/services/conversation.service';
 import { ApiService } from '../../core/services/api.service';
 import { IngestService } from '../../core/services/ingest.service';
@@ -22,6 +23,7 @@ export interface SessionGroup {
 export class SidebarComponent implements OnInit {
   readonly #conversationService = inject(ConversationService);
   readonly #apiService = inject(ApiService);
+  readonly #router = inject(Router);
   readonly #destroyRef = inject(DestroyRef);
   readonly ingestService = inject(IngestService);
 
@@ -59,8 +61,10 @@ export class SidebarComponent implements OnInit {
     document.body.classList.toggle('light', !this.isDark());
   }
 
-  selectSession(id: string) {
-    this.#conversationService.selectSession(id);
+  selectSession(session: HistorySession) {
+    this.#conversationService.selectSession(session.id);
+    const route = session.type === 'ask' ? '/qa' : '/search';
+    this.#router.navigate([route]);
   }
 
   deleteSession(id: string, event: Event) {

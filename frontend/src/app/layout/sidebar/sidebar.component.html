@@ -27,7 +27,7 @@
         <div
           class="conv-item"
           [class.active]="session.id === activeSessionId()"
-          (click)="selectSession(session.id)"
+          (click)="selectSession(session)"
         >
           <div class="conv-icon">
             {{ session.type === 'ask' ? '📖' : '🔍' }}
