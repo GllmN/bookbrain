@@ -1,31 +1,32 @@
-# 📚 BookBrain — Semantic Search Engine for Your Book Library
+# 📚 BookBrain — Moteur de recherche sémantique pour votre bibliothèque
 
-A local, private RAG (Retrieval-Augmented Generation) system that turns your Humble Bundle (or any) ebook collection into a searchable knowledge base.
+Un système RAG (Retrieval-Augmented Generation) local et privé qui transforme votre collection d'ebooks en une base de connaissance interrogeable.
 
 ## Architecture
 
 ```
 ┌─────────────────────────────────────────────────────┐
 │                   Angular Frontend                   │
-│         Search UI / Results / Book Manager           │
-│                    (port 4200)                        │
+│      Recherche / Q&R / Bibliothèque (port 4200)      │
 └──────────────────────┬──────────────────────────────┘
                        │ HTTP/REST
 ┌──────────────────────▼──────────────────────────────┐
 │                 Node.js API Gateway                   │
 │           Express + TypeScript (port 3000)            │
-│  • /api/search    — semantic search                  │
-│  • /api/books     — CRUD livres                      │
-│  • /api/ingest    — lancer l'indexation               │
-│  • /api/ask       — question + RAG answer             │
+│  • /api/search        — recherche sémantique          │
+│  • /api/ask           — Q&R RAG (stream SSE)          │
+│  • /api/books         — CRUD livres                   │
+│  • /api/history       — sessions & historique         │
+│  • /api/ingest        — déclenchement indexation      │
+│  • /api/models        — modèles LLM disponibles       │
 └──────┬───────────────────────────────┬──────────────┘
        │ HTTP                          │ child_process
 ┌──────▼──────────┐           ┌────────▼─────────────┐
 │  Ollama / Claude │           │   Python Pipeline     │
-│   LLM Server     │           │  • PDF/EPUB extract   │
-│  (port 11434)    │           │  • Chunking           │
+│   LLM Server     │           │  • Extraction PDF/EPUB│
+│  (port 11434)    │           │  • Chunking ~500 tokens│
 │                  │           │  • Embeddings          │
-│                  │           │  • ChromaDB storage    │
+│                  │           │  • Stockage ChromaDB   │
 └─────────────────┘           └────────┬─────────────┘
                                        │
                               ┌────────▼─────────────┐
@@ -36,18 +37,17 @@ A local, private RAG (Retrieval-Augmented Generation) system that turns your Hum
 
 ## Stack
 
-| Layer       | Tech                                      |
-|-------------|-------------------------------------------|
-| Frontend    | Angular 17+ / TypeScript / Angular material|
-| API Gateway | Node.js / Express / TypeScript             |
-| Pipeline    | Python 3.11+ / LangChain / ChromaDB        |
-| Embeddings  | sentence-transformers (local)              |
-| LLM         | Ollama (Mistral/Llama3) ou Claude API      |
-| Storage     | ChromaDB (vectors) + SQLite (metadata)     |
+| Couche      | Technologie                                         |
+|-------------|-----------------------------------------------------|
+| Frontend    | Angular 21+ / TypeScript / Design system CSS custom |
+| API Gateway | Node.js / Express / TypeScript                      |
+| Pipeline    | Python 3.11+ / ChromaDB / sentence-transformers     |
+| LLM         | Ollama (local) ou Claude API (remote)               |
+| Stockage    | ChromaDB (vecteurs) + SQLite via better-sqlite3     |
 
 ## Quick Start
 
-### 1. Prerequisites
+### 1. Prérequis
 ```bash
 # Python
 python3 --version  # >= 3.11
@@ -57,69 +57,67 @@ pip install -r backend/requirements.txt
 node --version  # >= 20
 cd backend && npm install
 
-# Angular
+# Angular CLI
 cd frontend && npm install
 
-# Ollama (optional, for local LLM)
+# Ollama (optionnel, pour LLM local)
 # https://ollama.ai
 ollama pull mistral
 ```
 
-### 2. Ingest your books
+### 2. Déposer vos livres
 ```bash
-# Drop your EPUBs/PDFs into ./library/
 mkdir library
-cp ~/HumbleBundle/*.epub ./library/
-cp ~/HumbleBundle/*.pdf ./library/
-
-# Run the ingestion pipeline
-cd backend && python3 scripts/ingest.py --input ../library
+cp ~/meslivres/*.epub ./library/
+cp ~/meslivres/*.pdf  ./library/
 ```
 
-### 3. Start the stack
+### 3. Démarrer la stack
 ```bash
 # Terminal 1 — Backend API
 cd backend && npm run dev
 
 # Terminal 2 — Frontend
-cd frontend && ng serve
+cd frontend && npm start
 
-# Terminal 3 — Ollama (if using local LLM)
+# Terminal 3 — Ollama (si LLM local)
 ollama serve
 ```
 
-### 4. Open
-Navigate to `http://localhost:4200`
+### 4. Ouvrir
+Naviguer vers `http://localhost:4200` et cliquer sur **Réindexer tout** dans la page Bibliothèque.
 
-## Project Structure
+## Structure du projet
 ```
 bookbrain/
 ├── backend/
-│   ├── src/                    # Node.js API (TypeScript)
-│   │   ├── controllers/        # Route handlers
-│   │   ├── services/           # Business logic
-│   │   ├── routes/             # Express routes
-│   │   ├── config/             # Config & env
-│   │   ├── models/             # TypeScript interfaces
-│   │   └── utils/              # Helpers
-│   ├── scripts/                # Python ingestion pipeline
-│   │   ├── ingest.py           # Main ingestion script
-│   │   ├── extractors.py       # PDF/EPUB text extraction
-│   │   ├── chunker.py          # Text chunking strategies
-│   │   └── embedder.py         # Embedding generation
+│   ├── src/
+│   │   ├── routes/         # Express routes (books, search, ask, history, ingest, models)
+│   │   ├── services/       # Logique métier (chromadb, ollama/claude, sqlite)
+│   │   ├── middleware/     # Error handling, validation
+│   │   └── index.ts        # Entry point Express
+│   ├── scripts/            # Pipeline Python d'ingestion
 │   ├── package.json
 │   ├── tsconfig.json
-│   └── requirements.txt        # Python dependencies
-├── frontend/                   # Angular app
+│   └── requirements.txt
+├── frontend/               # Angular app
 │   └── src/app/
-│       ├── pages/              # Search, Library, BookDetail
-│       ├── components/         # Shared components
-│       ├── services/           # API service layer
-│       └── models/             # TypeScript interfaces
-├── library/                    # Your books go here
-├── CLAUDE.md                   # Context for Claude Code
+│       ├── core/           # Services, modèles, guards
+│       ├── shared/         # Composants réutilisables (header, sidebar)
+│       ├── features/       # qa/, search/, library/
+│       └── app.component.ts  # Shell (sidebar + router-outlet)
+├── library/                # Vos livres (gitignored)
+├── chroma_db/              # Index vectoriel (gitignored)
+├── bookbrain.db            # SQLite local (gitignored)
+├── CLAUDE.md               # Instructions pour Claude Code
 └── README.md
 ```
 
-## CLAUDE.md
-See `CLAUDE.md` for instructions that Claude Code reads automatically.
+## Fonctionnalités
+
+- **Recherche sémantique** — retrouvez des concepts dans tous vos livres, au-delà des mots-clés
+- **Q&R RAG** — posez des questions en langage naturel, obtenez des réponses sourcées
+- **Streaming** — les réponses s'affichent token par token via SSE
+- **Historique persistant** — toutes les conversations sont sauvegardées en SQLite
+- **Multi-modèles** — basculez entre Ollama (local) et Claude API (cloud)
+- **Thème dark/light** — togglé depuis la sidebar
