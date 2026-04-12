@@ -1,9 +1,10 @@
-import { Component, input, output, computed, HostListener } from '@angular/core';
+import { ChangeDetectionStrategy, Component, input, output, computed, HostListener } from '@angular/core';
 import { Book } from '../../../../core/models/types';
 
 @Component({
   selector: 'app-book-picker',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [],
   templateUrl: './book-picker.component.html',
   styleUrl: './book-picker.component.scss',

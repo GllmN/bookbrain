@@ -1,4 +1,6 @@
 import { Injectable, inject, signal, computed } from '@angular/core';
+import { EMPTY } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 import { ApiService } from './api.service';
 import { ChatMessage, HistorySession } from '../models/types';
 
@@ -30,19 +32,25 @@ export class ConversationService {
   deleteSession(id: string) {
     if (this.activeSessionId() === id) this.activeSessionId.set(null);
     this.sessions.update(s => s.filter(x => x.id !== id));
-    this.#apiService.deleteHistorySession(id).subscribe();
+    this.#apiService.deleteHistorySession(id)
+      .pipe(catchError(err => { console.error('deleteHistorySession failed', err); return EMPTY; }))
+      .subscribe();
   }
 
   clearHistory() {
     this.activeSessionId.set(null);
     this.sessions.set([]);
-    this.#apiService.clearHistory().subscribe();
+    this.#apiService.clearHistory()
+      .pipe(catchError(err => { console.error('clearHistory failed', err); return EMPTY; }))
+      .subscribe();
   }
 
   createSession(session: HistorySession) {
     this.sessions.update(s => [session, ...s]);
     this.activeSessionId.set(session.id);
-    this.#apiService.createSession(session).subscribe();
+    this.#apiService.createSession(session)
+      .pipe(catchError(err => { console.error('createSession failed', err); return EMPTY; }))
+      .subscribe();
   }
 
   patchSession(id: string, patch: Partial<HistorySession>) {

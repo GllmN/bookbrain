@@ -1,9 +1,10 @@
-import { Component, input, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, input, signal } from '@angular/core';
 import { ChatMessage } from '../../../../core/models/types';
 
 @Component({
   selector: 'app-chat-response',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './chat-response.component.html',
   styleUrl: './chat-response.component.scss',
 })

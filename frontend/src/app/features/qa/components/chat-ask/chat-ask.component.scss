@@ -43,7 +43,7 @@
   align-items: center;
   gap: 8px;
   transition: border-color 0.2s, box-shadow 0.2s;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
+  box-shadow: var(--shadow-sm);
 
   &:focus-within {
     border-color: var(--accent);
@@ -70,7 +70,7 @@
   height: 45px;
   border-radius: var(--radius-sm);
   background: var(--accent);
-  color: #fff;
+  color: var(--on-accent);
   border: none;
   cursor: pointer;
   display: flex;

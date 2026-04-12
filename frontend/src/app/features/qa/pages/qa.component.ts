@@ -1,4 +1,5 @@
 import {
+  ChangeDetectionStrategy,
   Component,
   inject,
   signal,
@@ -17,10 +18,13 @@ import { HeaderFiltersComponent } from '../../../shared/components/header-filter
 import { ChatQuestionComponent } from '../components/chat-question/chat-question.component';
 import { ChatResponseComponent } from '../components/chat-response/chat-response.component';
 import { ChatAskComponent } from '../components/chat-ask/chat-ask.component';
+import { EMPTY } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 
 @Component({
   selector: 'app-qa',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     HeaderComponent,
     HeaderFiltersComponent,
@@ -152,7 +156,9 @@ export class QaComponent implements OnInit {
     } else if (state.sources.length) {
       this.#conversationService.updateLastMessage(sessionId, { sources: state.sources });
     }
-    this.#apiService.updateSession(sessionId, { messages: this.session()?.messages }).subscribe();
+    this.#apiService.updateSession(sessionId, { messages: this.session()?.messages })
+      .pipe(catchError(err => { console.error('updateSession failed', err); return EMPTY; }))
+      .subscribe();
   }
 
   #onError(sessionId: string, state: { sources: SearchResult[]; messageAdded: boolean }): void {

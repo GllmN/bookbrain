@@ -1,4 +1,4 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, OnInit } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { ConversationService } from '../core/services/conversation.service';
 import { LlmModelService } from '../core/services/llm-model.service';
@@ -7,6 +7,7 @@ import { SidebarComponent } from './sidebar/sidebar.component';
 @Component({
   selector: 'app-layout',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [RouterOutlet, SidebarComponent],
   template: `
     <div class="layout">

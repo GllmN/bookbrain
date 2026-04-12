@@ -1,9 +1,10 @@
-import { Component, input, output, HostListener } from '@angular/core';
+import { ChangeDetectionStrategy, Component, input, output, HostListener } from '@angular/core';
 import { LlmModel } from '../../../../core/models/types';
 
 @Component({
   selector: 'app-model-picker',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [],
   templateUrl: './model-picker.component.html',
   styleUrl: './model-picker.component.scss',

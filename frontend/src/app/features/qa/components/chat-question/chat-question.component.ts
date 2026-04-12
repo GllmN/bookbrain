@@ -1,8 +1,9 @@
-import { Component, input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, input } from '@angular/core';
 
 @Component({
   selector: 'app-chat-question',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   template: `<div class="bubble">{{ content() }}</div>`,
   styles: [`
     :host {

@@ -1,4 +1,6 @@
-import { Component, inject, signal, effect, OnInit, EffectRef } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, signal, effect, OnInit, EffectRef } from '@angular/core';
+import { EMPTY } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 import { FormsModule } from '@angular/forms';
 import { SlicePipe } from '@angular/common';
 import { ApiService } from '../../../core/services/api.service';
@@ -10,6 +12,7 @@ import { HeaderFiltersComponent } from '../../../shared/components/header-filter
 @Component({
   selector: 'app-search',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [HeaderComponent, HeaderFiltersComponent, FormsModule, SlicePipe],
   templateUrl: './search.component.html',
   styleUrl: './search.component.scss',
@@ -57,7 +60,9 @@ export class SearchComponent implements OnInit {
         const session = this.#conversationService.buildSession('search', q);
         this.#conversationService.createSession(session);
         this.#conversationService.patchSession(session.id, { searchQuery: q, searchResults: res.results, searchTook: res.took });
-        this.#apiService.updateSession(session.id, { searchQuery: q, searchResults: res.results, searchTook: res.took }).subscribe();
+        this.#apiService.updateSession(session.id, { searchQuery: q, searchResults: res.results, searchTook: res.took })
+          .pipe(catchError(err => { console.error('updateSession failed', err); return EMPTY; }))
+          .subscribe();
       },
       error: () => this.loading.set(false),
     });
