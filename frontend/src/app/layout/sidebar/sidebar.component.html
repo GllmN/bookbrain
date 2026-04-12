@@ -5,7 +5,7 @@
       <div class="sidebar-logo-icon">B</div>
       <span class="sidebar-logo-text">BookBrain</span>
     </div>
-    <button class="new-chat-btn" (click)="newChat()" title="New chat">+</button>
+    <button class="new-chat-btn" (click)="newChat()" title="Nouvelle conversation">+</button>
   </div>
 
   <div class="sidebar-search">
@@ -13,13 +13,13 @@
     <input
       [ngModel]="historyFilter()"
       (ngModelChange)="historyFilter.set($event)"
-      placeholder="Search conversations..."
+      placeholder="Rechercher..."
     />
   </div>
 
   <div class="sidebar-list">
     @if (filteredGroups().length === 0) {
-      <p class="sidebar-empty">No history yet</p>
+      <p class="sidebar-empty">Aucun historique</p>
     }
     @for (group of filteredGroups(); track group.label) {
       <div class="sidebar-section">{{ group.label }}</div>
@@ -43,7 +43,7 @@
           <button
             class="conv-delete"
             (click)="deleteSession(session.id, $event)"
-            title="Delete"
+            title="Supprimer"
           >✕</button>
         </div>
       }
@@ -58,7 +58,7 @@
     @if (ingestService.isRunning()) {
       <div class="ingest-indicator">
         <div class="ingest-ring"></div>
-        <span class="ingest-label">Indexing…</span>
+        <span class="ingest-label">Indexation…</span>
       </div>
     }
 
@@ -66,6 +66,7 @@
       <button class="theme-toggle" (click)="toggleTheme()" title="Toggle theme">
         {{ isDark() ? '☽' : '☀' }}
       </button>
+
     </div>
   </div>
 

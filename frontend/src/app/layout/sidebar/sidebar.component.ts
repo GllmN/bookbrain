@@ -90,10 +90,10 @@ export class SidebarComponent implements OnInit {
     weekAgo.setDate(weekAgo.getDate() - 7);
 
     const groups: SessionGroup[] = [
-      { label: 'Today', sessions: [] },
-      { label: 'Yesterday', sessions: [] },
-      { label: 'This week', sessions: [] },
-      { label: 'Older', sessions: [] },
+      { label: "Aujourd'hui", sessions: [] },
+      { label: 'Hier', sessions: [] },
+      { label: 'Cette semaine', sessions: [] },
+      { label: 'Plus ancien', sessions: [] },
     ];
 
     for (const s of sessions) {

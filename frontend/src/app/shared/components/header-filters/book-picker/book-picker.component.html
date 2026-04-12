@@ -4,15 +4,15 @@
     <div class="dialog-header">
       <div class="dialog-title-group">
         <span class="dialog-icon">📚</span>
-        <h3 class="dialog-title">Filter by book</h3>
+        <h3 class="dialog-title">Filtrer par livre</h3>
       </div>
       <button class="dialog-close" (click)="closed.emit()">✕</button>
     </div>
 
     @if (books().length === 0) {
       <div class="empty">
-        <p class="empty-text">No books indexed yet.</p>
-        <p class="empty-hint">Go to Library to index your books.</p>
+        <p class="empty-text">Aucun livre indexé.</p>
+        <p class="empty-hint">Rendez-vous dans la Bibliothèque pour indexer vos livres.</p>
       </div>
     } @else {
       <div class="book-list">
@@ -24,8 +24,8 @@
         >
           <div class="book-icon all">✦</div>
           <div class="book-info">
-            <span class="book-name">All books</span>
-            <span class="book-meta">{{ books().length }} books indexed</span>
+            <span class="book-name">Tous les livres</span>
+            <span class="book-meta">{{ books().length }} livres indexés</span>
           </div>
           @if (selectedCount() === 0) {
             <span class="book-check">✓</span>

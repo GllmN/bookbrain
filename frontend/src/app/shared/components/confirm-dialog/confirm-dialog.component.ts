@@ -31,9 +31,9 @@ export interface ConfirmDialogData {
       </div>
 
       <div class="dialog-footer">
-        <button class="btn-cancel" (click)="ref.close(false)">Cancel</button>
+        <button class="btn-cancel" (click)="ref.close(false)">Annuler</button>
         <button class="btn-confirm" [class.danger]="data.confirmDanger" (click)="ref.close(true)">
-          {{ data.confirmLabel ?? 'Confirm' }}
+          {{ data.confirmLabel ?? 'Confirmer' }}
         </button>
       </div>
     </div>

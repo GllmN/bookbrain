@@ -8,9 +8,9 @@ import { RouterLink, RouterLinkActive } from '@angular/router';
   imports: [RouterLink, RouterLinkActive],
   template: `
     <nav class="main-nav">
-      <a class="nav-item" routerLink="/search" routerLinkActive="active">Search</a>
-      <a class="nav-item" routerLink="/qa"     routerLinkActive="active">Q&amp;A</a>
-      <a class="nav-item" routerLink="/library" routerLinkActive="active">Library</a>
+      <a class="nav-item" routerLink="/search" routerLinkActive="active">Recherche</a>
+      <a class="nav-item" routerLink="/qa"     routerLinkActive="active">Q&amp;R</a>
+      <a class="nav-item" routerLink="/library" routerLinkActive="active">Bibliothèque</a>
     </nav>
   `,
   styleUrl: './nav-bar.component.scss',

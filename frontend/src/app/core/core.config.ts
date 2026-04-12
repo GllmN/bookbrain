@@ -1,3 +1,4 @@
+import { LOCALE_ID } from '@angular/core';
 import { provideHttpClient } from '@angular/common/http';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 
@@ -8,4 +9,5 @@ import { provideAnimationsAsync } from '@angular/platform-browser/animations/asy
 export const coreProviders = [
   provideHttpClient(),
   provideAnimationsAsync(),
+  { provide: LOCALE_ID, useValue: 'fr-FR' },
 ];

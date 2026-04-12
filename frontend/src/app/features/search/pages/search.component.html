@@ -19,17 +19,17 @@
         class="search-input"
         [(ngModel)]="query"
         (keydown.enter)="submit()"
-        placeholder="Search your books..."
+        placeholder="Rechercher dans vos livres..."
       />
       <button class="search-btn" (click)="submit()" [disabled]="loading()">
-        @if (loading()) { … } @else { Search }
+        @if (loading()) { … } @else { Rechercher }
       </button>
     </div>
 
     <!-- Stats -->
     @if (results().length > 0) {
       <div class="stats">
-        <span class="stat-pill">{{ results().length }} results</span>
+        <span class="stat-pill">{{ results().length }} résultats</span>
         <span class="stat-pill orange">{{ searchTook() }}ms</span>
         <span class="stat-pill neutral">{{ lastQuery() }}</span>
       </div>
@@ -67,16 +67,16 @@
     @if (!loading() && results().length === 0 && !lastQuery()) {
       <div class="empty-state">
         <div class="empty-icon">⌕</div>
-        <p class="empty-title">Semantic search</p>
-        <p class="empty-hint">Find concepts across all your books, not just keywords.</p>
+        <p class="empty-title">Recherche sémantique</p>
+        <p class="empty-hint">Trouvez des concepts dans tous vos livres, au-delà des simples mots-clés.</p>
       </div>
     }
 
     @if (!loading() && results().length === 0 && lastQuery()) {
       <div class="empty-state">
         <div class="empty-icon">📚</div>
-        <p class="empty-title">No results found</p>
-        <p class="empty-hint">Try different keywords or broaden your search.</p>
+        <p class="empty-title">Aucun résultat</p>
+        <p class="empty-hint">Essayez d'autres termes ou élargissez votre recherche.</p>
       </div>
     }
 

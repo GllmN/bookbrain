@@ -24,9 +24,9 @@ export class HeaderFiltersComponent {
 
   booksLabel = computed(() => {
     const count = this.selectedBookIds().length;
-    if (count === 0) return 'All books';
-    if (count === 1) return '1 book';
-    return `${count} books`;
+    if (count === 0) return 'Tous les livres';
+    if (count === 1) return '1 livre';
+    return `${count} livres`;
   });
 
   toggleBookPicker() {

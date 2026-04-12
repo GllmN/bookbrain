@@ -4,15 +4,15 @@
     <div class="dialog-header">
       <div class="dialog-title-group">
         <span class="dialog-icon">✦</span>
-        <h3 class="dialog-title">Select model</h3>
+        <h3 class="dialog-title">Sélectionner un modèle</h3>
       </div>
       <button class="dialog-close" (click)="closed.emit()">✕</button>
     </div>
 
     @if (llmModels().length === 0) {
       <div class="empty">
-        <p class="empty-text">No models available.</p>
-        <p class="empty-hint">Make sure Ollama is running or an API key is configured.</p>
+        <p class="empty-text">Aucun modèle disponible.</p>
+        <p class="empty-hint">Assurez-vous qu'Ollama est actif ou qu'une clé API est configurée.</p>
       </div>
     } @else {
       <div class="model-list">

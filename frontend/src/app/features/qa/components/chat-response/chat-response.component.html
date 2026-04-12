@@ -48,8 +48,8 @@
             }
             @if (msg.sources!.length > 3) {
               <button class="sources-more" (click)="toggleAllSources()">
-                @if (allSourcesShown()) { show less }
-                @else { +{{ msg.sources!.length - 3 }} more }
+                @if (allSourcesShown()) { voir moins }
+                @else { +{{ msg.sources!.length - 3 }} autres }
               </button>
             }
           </div>
