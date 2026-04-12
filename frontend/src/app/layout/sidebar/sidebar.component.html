@@ -54,6 +54,14 @@
     <span class="sidebar-stats">
       {{ sessions().length }} sessions · {{ totalChunks() | number }} chunks
     </span>
+
+    @if (ingestService.isRunning()) {
+      <div class="ingest-indicator">
+        <div class="ingest-ring"></div>
+        <span class="ingest-label">Indexing…</span>
+      </div>
+    }
+
     <div class="footer-actions">
       <button class="theme-toggle" (click)="toggleTheme()" title="Toggle theme">
         {{ isDark() ? '☽' : '☀' }}

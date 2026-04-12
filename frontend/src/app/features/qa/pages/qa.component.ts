@@ -14,7 +14,7 @@ import { ModelService } from '../../../core/services/model.service';
 import { ApiService } from '../../../core/services/api.service';
 import { Book, ChatMessage, SearchResult } from '../../../core/models/types';
 import { HeaderComponent } from '../../../shared/components/header/header.component';
-import { HeaderFiltersComponent } from '../../../shared/components/header/header-filters/header-filters.component';
+import { HeaderFiltersComponent } from '../../../shared/components/header-filters/header-filters.component';
 
 @Component({
   selector: 'app-qa',
@@ -33,7 +33,7 @@ export class QaComponent implements OnInit {
   books = signal<Book[]>([]);
   selectedBookIds = signal<string[]>([]);
   loading = signal(false);
-  query = '';
+  query: string = '';
   openSourcesAt = signal<Set<number>>(new Set());
   allSourcesAt = signal<Set<number>>(new Set());
 

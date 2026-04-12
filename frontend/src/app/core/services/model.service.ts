@@ -15,9 +15,9 @@ export class ModelService {
 
   /** Nom court pour affichage dans le footer (max 14 chars) */
   selectedModelLabel = computed(() => {
-    const m = this.selectedModel();
-    if (!m) return 'No model';
-    return m.name.length > 14 ? m.name.slice(0, 13) + '…' : m.name;
+    const llmModel = this.selectedModel();
+    if (!llmModel) return 'No model';
+    return llmModel.name.length > 14 ? llmModel.name.slice(0, 13) + '…' : llmModel.name;
   });
 
   loadModels() {

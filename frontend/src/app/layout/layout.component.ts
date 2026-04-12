@@ -23,11 +23,11 @@ import { SidebarComponent } from './sidebar/sidebar.component';
   `],
 })
 export class LayoutComponent implements OnInit {
-  private readonly conv = inject(ConversationService);
-  private readonly modelService = inject(ModelService);
+  readonly #conversationService = inject(ConversationService);
+  readonly #modelService = inject(ModelService);
 
   ngOnInit() {
-    this.conv.loadSessions();
-    this.modelService.loadModels();
+    this.#conversationService.loadSessions();
+    this.#modelService.loadModels();
   }
 }

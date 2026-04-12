@@ -1,8 +1,10 @@
-import { Component, inject, signal, computed, OnInit } from '@angular/core';
+import { Component, inject, signal, computed, OnInit, DestroyRef } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { DecimalPipe, SlicePipe } from '@angular/common';
 import { ConversationService } from '../../core/services/conversation.service';
 import { ApiService } from '../../core/services/api.service';
+import { IngestService } from '../../core/services/ingest.service';
 import { HistorySession } from '../../core/models/types';
 
 export interface SessionGroup {
@@ -20,6 +22,8 @@ export interface SessionGroup {
 export class SidebarComponent implements OnInit {
   readonly #conversationService = inject(ConversationService);
   readonly #apiService = inject(ApiService);
+  readonly #destroyRef = inject(DestroyRef);
+  readonly ingestService = inject(IngestService);
 
   sessions = this.#conversationService.sessions;
   activeSessionId = this.#conversationService.activeSessionId;
@@ -27,6 +31,7 @@ export class SidebarComponent implements OnInit {
   historyFilter = signal('');
   isDark = signal(true);
   totalChunks = signal(0);
+
   filteredGroups = computed<SessionGroup[]>(() => {
     const filter = this.historyFilter().toLowerCase();
     const list = filter
@@ -36,6 +41,14 @@ export class SidebarComponent implements OnInit {
   });
 
   ngOnInit() {
+    this.#loadStats();
+    // Refresh chunk count after each ingest run
+    this.ingestService.onComplete
+      .pipe(takeUntilDestroyed(this.#destroyRef))
+      .subscribe(() => this.#loadStats());
+  }
+
+  #loadStats() {
     this.#apiService.getBooks().subscribe({
       next: (data) => this.totalChunks.set(data.totalChunks),
     });

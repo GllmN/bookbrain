@@ -222,6 +222,33 @@
   gap: 8px;
 }
 
+.ingest-indicator {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.ingest-ring {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 1.5px solid var(--border);
+  border-top-color: var(--accent);
+  animation: ingest-spin 0.75s linear infinite;
+  flex-shrink: 0;
+}
+
+.ingest-label {
+  font-size: 11px;
+  color: var(--accent-text);
+  white-space: nowrap;
+}
+
+@keyframes ingest-spin {
+  to { transform: rotate(360deg); }
+}
+
 .sidebar-stats {
   font-size: 11px;
   color: var(--text-tertiary);
