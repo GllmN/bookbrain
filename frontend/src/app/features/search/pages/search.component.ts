@@ -7,7 +7,7 @@ import { ApiService } from '../../../core/services/api.service';
 import { ConversationService } from '../../../core/services/conversation.service';
 import { Book, SearchResult } from '../../../core/models/types';
 import { HeaderComponent } from '../../../shared/components/header/header.component';
-import { HeaderFiltersComponent } from '../../../shared/components/header-filters/header-filters.component';
+import { HeaderFiltersComponent } from '../../../shared/components/header/header-filters/header-filters.component';
 
 @Component({
   selector: 'app-search',

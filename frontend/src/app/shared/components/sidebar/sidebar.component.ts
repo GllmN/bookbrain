@@ -3,10 +3,10 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { DecimalPipe, SlicePipe } from '@angular/common';
 import { Router } from '@angular/router';
-import { ConversationService } from '../../core/services/conversation.service';
-import { ApiService } from '../../core/services/api.service';
-import { IngestService } from '../../core/services/ingest.service';
-import { HistorySession } from '../../core/models/types';
+import { ConversationService } from '../../../core/services/conversation.service';
+import { ApiService } from '../../../core/services/api.service';
+import { IngestService } from '../../../core/services/ingest.service';
+import { HistorySession } from '../../../core/models/types';
 
 export interface SessionGroup {
   label: string;

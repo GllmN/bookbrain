@@ -28,12 +28,14 @@ bookbrain/
 frontend/src/
 ├── app/
 │   ├── core/            # Singletons : services, models, guards, interceptors
-│   ├── shared/          # Composants/pipes/directives réutilisables cross-features
+│   ├── shared/
+│   │   └── components/
+│   │       ├── header/  # HeaderComponent + nav-bar/ + header-filters/ + confirm-dialog/
+│   │       └── sidebar/ # SidebarComponent
 │   ├── features/        # Un dossier par domaine métier (qa/, search/, library/)
-│   ├── layout/          # Shell : LayoutComponent + SidebarComponent
-│   ├── app.component.ts # Root minimal — <router-outlet> uniquement
+│   ├── app.component.ts # Shell : sidebar + <router-outlet> + initialisation
 │   ├── app.config.ts    # ApplicationConfig
-│   └── app.routes.ts    # Layout wrapper + children lazy par feature
+│   └── app.routes.ts    # Routes à plat par feature (lazy)
 ├── environments/        # environment.ts / environment.prod.ts
 └── styles/              # _variables.scss, _mixins.scss, global.scss
 ```

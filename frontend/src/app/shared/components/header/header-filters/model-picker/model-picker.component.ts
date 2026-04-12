@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, input, output, HostListener } from '@angular/core';
-import { LlmModel } from '../../../../core/models/types';
+import { LlmModel } from '../../../../../core/models/types';
 
 @Component({
   selector: 'app-model-picker',

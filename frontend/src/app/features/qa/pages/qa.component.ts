@@ -14,7 +14,7 @@ import { LlmModelService } from '../../../core/services/llm-model.service';
 import { ApiService } from '../../../core/services/api.service';
 import { AskStreamEvent, Book, ChatMessage, SearchResult } from '../../../core/models/types';
 import { HeaderComponent } from '../../../shared/components/header/header.component';
-import { HeaderFiltersComponent } from '../../../shared/components/header-filters/header-filters.component';
+import { HeaderFiltersComponent } from '../../../shared/components/header/header-filters/header-filters.component';
 import { ChatQuestionComponent } from '../components/chat-question/chat-question.component';
 import { ChatResponseComponent } from '../components/chat-response/chat-response.component';
 import { ChatAskComponent } from '../components/chat-ask/chat-ask.component';
