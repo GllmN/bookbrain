@@ -1,0 +1,61 @@
+<div class="bubble-assistant" [class.spinner-bubble]="loading()">
+
+  <div class="assistant-label">
+    <div class="assistant-dot"></div>
+    <span class="assistant-name">BookBrain</span>
+  </div>
+
+  @if (loading()) {
+    <div class="kitt-bar">
+      @for (seg of [0,1,2,3,4,5,6,7,8,9,10,11]; track seg) {
+        <div class="seg"></div>
+      }
+    </div>
+  } @else if (message(); as msg) {
+    <div class="answer-text">{{ msg.content }}</div>
+
+    @if (msg.sources?.length) {
+      <div class="sources">
+        <button class="sources-header" (click)="toggleSources()">
+          <svg class="chevron" [class.open]="sourcesOpen()"
+            viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M3 4.5L6 7.5L9 4.5" stroke="currentColor" stroke-width="1.5"
+              stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <span class="sources-label">Sources</span>
+          <span class="sources-count">{{ msg.sources!.length }}</span>
+        </button>
+
+        @if (sourcesOpen()) {
+          <div class="sources-list">
+            @for (src of (allSourcesShown() ? msg.sources! : msg.sources!.slice(0, 3)); track src.chunkId) {
+              <div class="source-item">
+                <div class="source-icon" [class]="src.bookTitle ? 'epub' : 'pdf'">
+                  {{ fileTypeLabel(src.bookTitle ? 'epub' : 'pdf') }}
+                </div>
+                <div class="source-info">
+                  <div class="source-book">{{ src.bookTitle }}</div>
+                  <div class="source-detail">
+                    @if (src.chapter) { {{ src.chapter }} · }
+                    @if (src.page) { p. {{ src.page }} }
+                  </div>
+                </div>
+                <span class="source-score" [class]="scoreClass(src.score)"
+                  data-tooltip="Score de pertinence entre ta question et ce passage">
+                  {{ scoreLabel(src.score) }}
+                </span>
+              </div>
+            }
+            @if (msg.sources!.length > 3) {
+              <button class="sources-more" (click)="toggleAllSources()">
+                @if (allSourcesShown()) { show less }
+                @else { +{{ msg.sources!.length - 3 }} more }
+              </button>
+            }
+          </div>
+        }
+      </div>
+    }
+  }
+
+</div>

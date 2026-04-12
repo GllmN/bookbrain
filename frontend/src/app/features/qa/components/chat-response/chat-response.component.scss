@@ -1,0 +1,244 @@
+:host {
+  display: block;
+}
+
+.bubble-assistant {
+  background: var(--card);
+  border: 0.5px solid var(--border);
+  border-radius: 4px 16px 16px 16px;
+  padding: 16px 18px;
+  position: relative;
+  overflow: hidden;
+
+  &::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 60px;
+    background: linear-gradient(to top, var(--halo), transparent);
+    border-radius: 0 0 16px 16px;
+    pointer-events: none;
+  }
+}
+
+.assistant-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+.assistant-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--accent), var(--purple));
+}
+
+.assistant-name {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--accent-text);
+}
+
+.answer-text {
+  font-size: 15px;
+  line-height: 1.8;
+  color: var(--text);
+  white-space: pre-wrap;
+  position: relative;
+  z-index: 1;
+  font-weight: 400;
+  letter-spacing: -0.1px;
+}
+
+// ── Sources ────────────────────────────────────────────────────────────────────
+
+.sources {
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 0.5px solid var(--border);
+  position: relative;
+  z-index: 1;
+}
+
+.sources-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 2px 4px;
+  border-radius: 6px;
+  font-family: var(--font);
+  transition: background 0.15s;
+
+  &:hover { background: var(--card-hover); }
+}
+
+.chevron {
+  width: 12px;
+  height: 12px;
+  color: var(--text-tertiary);
+  flex-shrink: 0;
+  transition: transform 0.2s ease;
+  transform: rotate(-90deg);
+
+  &.open { transform: rotate(0deg); }
+}
+
+.sources-label {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: var(--text-tertiary);
+}
+
+.sources-count {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--accent-text);
+  background: var(--accent-soft);
+  padding: 1px 6px;
+  border-radius: 8px;
+}
+
+.sources-list {
+  margin-top: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.source-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 6px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: background 0.2s;
+
+  &:hover { background: var(--card-hover); }
+}
+
+.source-icon {
+  width: 20px;
+  height: 20px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 7px;
+  font-weight: 700;
+  flex-shrink: 0;
+
+  &.epub { background: var(--purple-soft); color: var(--purple); }
+  &.pdf  { background: var(--orange-soft); color: var(--orange); }
+}
+
+.source-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.source-book {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 220px;
+}
+
+.source-detail {
+  font-size: 10px;
+  color: var(--text-tertiary);
+  white-space: nowrap;
+}
+
+.sources-more {
+  margin-top: 4px;
+  padding: 3px 8px;
+  background: transparent;
+  border: none;
+  color: var(--text-tertiary);
+  font-size: 11px;
+  font-family: var(--font);
+  cursor: pointer;
+  transition: color 0.15s;
+  align-self: flex-start;
+
+  &:hover { color: var(--accent-text); }
+}
+
+.source-score {
+  font-size: 10px;
+  font-weight: 600;
+  padding: 1px 6px;
+  border-radius: 4px;
+  flex-shrink: 0;
+  position: relative;
+  cursor: default;
+
+  &::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: calc(100% + 6px);
+    right: 0;
+    background: var(--card);
+    border: 0.5px solid var(--border);
+    color: var(--text-secondary);
+    font-size: 11px;
+    font-weight: 400;
+    padding: 5px 9px;
+    border-radius: 8px;
+    white-space: nowrap;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.15s ease;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    z-index: 10;
+  }
+
+  &:hover::after { opacity: 1; }
+  &.high { background: var(--green-soft); color: var(--green); }
+  &.mid  { background: var(--accent-soft); color: var(--accent-text); }
+}
+
+// ── Spinner KITT ───────────────────────────────────────────────────────────────
+
+.spinner-bubble {
+  .kitt-bar {
+    display: flex;
+    gap: 3px;
+    margin-top: 4px;
+  }
+
+  .seg {
+    flex: 1;
+    height: 5px;
+    border-radius: 2px;
+    background: var(--progress-bg);
+    animation: kitt-wave 1.4s ease-in-out infinite;
+
+    @for $i from 0 through 11 {
+      &:nth-child(#{$i + 1}) { animation-delay: #{$i * 0.1}s; }
+    }
+  }
+}
+
+@keyframes kitt-wave {
+  0%, 100% { background: var(--progress-bg); }
+  50% { background: var(--accent); box-shadow: 0 0 8px rgba(59, 130, 246, 0.5); }
+}
