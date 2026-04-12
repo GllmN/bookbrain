@@ -1,0 +1,40 @@
+import {
+  Component,
+  input,
+  output,
+  HostListener,
+} from '@angular/core';
+import { LlmModel } from '../../models/types';
+
+@Component({
+  selector: 'app-model-picker',
+  standalone: true,
+  imports: [],
+  templateUrl: './model-picker.component.html',
+  styleUrl: './model-picker.component.scss',
+})
+export class ModelPickerComponent {
+  models = input<LlmModel[]>([]);
+  selectedModelId = input('');
+
+  modelSelected = output<string>();
+  closed = output<void>();
+
+  @HostListener('document:keydown.escape')
+  onEsc() {
+    this.closed.emit();
+  }
+
+  select(id: string) {
+    this.modelSelected.emit(id);
+    this.closed.emit();
+  }
+
+  providerIcon(provider: string): string {
+    return provider === 'anthropic' ? '☁' : '⚡';
+  }
+
+  providerLabel(provider: string): string {
+    return provider === 'anthropic' ? 'Anthropic (cloud)' : 'Ollama (local)';
+  }
+}

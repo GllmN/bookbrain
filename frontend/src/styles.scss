@@ -1,30 +1,126 @@
 @use '@angular/material' as mat;
 
-// ── Angular Material M3 dark theme ────────────────────────────────────────────
-
+// ── Angular Material — minimal blue theme (fonctionnalité uniquement) ──────────
 html {
   @include mat.theme((
     color: (
       theme-type: dark,
-      primary: mat.$violet-palette,
+      primary: mat.$blue-palette,
     ),
-    typography: Roboto,
+    typography: 'Plus Jakarta Sans',
     density: 0,
   ));
 }
 
-// ── Global base ───────────────────────────────────────────────────────────────
+// ── Design tokens ─────────────────────────────────────────────────────────────
+:root {
+  --accent: #3b82f6;
+  --accent-soft: rgba(59, 130, 246, 0.12);
+  --accent-text: #3b82f6;
+  --accent-hover: #2563eb;
+  --orange: #f97316;
+  --orange-soft: rgba(249, 115, 22, 0.12);
+  --purple: #8b5cf6;
+  --purple-soft: rgba(139, 92, 246, 0.1);
+  --green: #22c55e;
+  --green-soft: rgba(34, 197, 94, 0.12);
+  --red: #ef4444;
+  --red-soft: rgba(239, 68, 68, 0.1);
+  --radius: 14px;
+  --radius-sm: 10px;
+  --radius-pill: 20px;
+  --sidebar-w: 260px;
+  --font: 'Plus Jakarta Sans', -apple-system, sans-serif;
+}
 
-html, body {
+// ── Dark theme (défaut) ───────────────────────────────────────────────────────
+body {
+  --bg: #0c0c0f;
+  --surface: #111114;
+  --card: #1a1a20;
+  --card-hover: #1e1e26;
+  --border: #2a2a33;
+  --text: #eaeaf0;
+  --text-secondary: #8888a0;
+  --text-tertiary: #555566;
+  --sidebar-bg: #101014;
+  --sidebar-item-hover: #1a1a22;
+  --sidebar-item-active: #1e1e2a;
+  --glow: rgba(59, 130, 246, 0.15);
+  --glow-spread: rgba(59, 130, 246, 0.08);
+  --halo: rgba(59, 130, 246, 0.08);
+  --stat-bg: #141418;
+  --progress-bg: #1a1a2a;
+  --drop-bg: rgba(59, 130, 246, 0.04);
+  --drop-border: rgba(59, 130, 246, 0.2);
+  --user-bubble: #2a2a40;
+  background: var(--bg);
+  color: var(--text);
+  transition: background 0.3s, color 0.3s;
+}
+
+// ── Light theme ───────────────────────────────────────────────────────────────
+body.light {
+  --bg: #f5f5f7;
+  --surface: #ffffff;
+  --card: #ffffff;
+  --card-hover: #f8f8fc;
+  --border: #e0e0e6;
+  --text: #1a1a2e;
+  --text-secondary: #6b6b80;
+  --text-tertiary: #9999aa;
+  --sidebar-bg: #f0f0f3;
+  --sidebar-item-hover: #e8e8ee;
+  --sidebar-item-active: #e0e0ea;
+  --glow: rgba(59, 130, 246, 0.2);
+  --glow-spread: rgba(59, 130, 246, 0.06);
+  --halo: rgba(59, 130, 246, 0.07);
+  --stat-bg: #f0f0f4;
+  --progress-bg: #e4e4ea;
+  --drop-bg: rgba(59, 130, 246, 0.03);
+  --drop-border: rgba(59, 130, 246, 0.25);
+  --user-bubble: #e8e8f0;
+}
+
+// ── Base ──────────────────────────────────────────────────────────────────────
+html,
+body {
   height: 100%;
   margin: 0;
-  font-family: Roboto, 'Helvetica Neue', sans-serif;
-  background-color: #0f0f13;
-  color: #e5e7eb;
+  font-family: var(--font);
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
 }
 
 app-root {
   display: flex;
-  flex-direction: column;
   height: 100%;
+}
+
+// ── Scrollbars discrètes ──────────────────────────────────────────────────────
+::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 2px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-tertiary);
+}
+
+// ── Overrides Material pour coller au design system ───────────────────────────
+.mat-mdc-snack-bar-container {
+  --mdc-snackbar-container-color: var(--card);
+  --mdc-snackbar-supporting-text-color: var(--text);
+  border: 0.5px solid var(--border);
+  border-radius: var(--radius-sm) !important;
 }

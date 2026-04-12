@@ -1,0 +1,116 @@
+<div class="page">
+
+  <!-- ══ HEADER ══ -->
+  <div class="main-header">
+    <nav class="main-nav">
+      <a class="nav-item" routerLink="/search" routerLinkActive="active">Search</a>
+      <a class="nav-item active" routerLink="/qa" routerLinkActive="active">Q&amp;A</a>
+      <a class="nav-item" routerLink="/library" routerLinkActive="active">Library</a>
+    </nav>
+    <div class="filter-bar">
+      <button
+        class="filter-chip"
+        [class.active]="selectedBookIds().length === 0"
+        (click)="selectedBookIds.set([])"
+      >All books</button>
+      @for (book of books(); track book.id) {
+        <button
+          class="filter-chip"
+          [class.active]="isBookSelected(book.id)"
+          (click)="toggleBook(book.id)"
+        >{{ book.title | slice:0:20 }}{{ book.title.length > 20 ? '…' : '' }}</button>
+      }
+    </div>
+  </div>
+
+  <!-- ══ CHAT AREA ══ -->
+  <div class="chat-area" #chatArea>
+
+    @if (!messages().length && !loading()) {
+      <div class="empty-state">
+        <div class="empty-icon">💬</div>
+        <p class="empty-title">Ask your books anything</p>
+        <p class="empty-hint">Start a conversation — your library will answer.</p>
+      </div>
+    }
+
+    @for (msg of messages(); track $index) {
+
+      @if (msg.role === 'user') {
+        <div class="msg-user">
+          <div class="bubble-user">{{ msg.content }}</div>
+        </div>
+      }
+
+      @if (msg.role === 'assistant') {
+        <div class="msg-assistant">
+          <div class="bubble-assistant">
+            <div class="assistant-label">
+              <div class="assistant-dot"></div>
+              <span class="assistant-name">BookBrain</span>
+            </div>
+            <div class="answer-text">{{ msg.content }}</div>
+
+            @if (msg.sources?.length) {
+              <div class="sources">
+                <div class="sources-title">Sources</div>
+                @for (src of msg.sources!; track src.chunkId) {
+                  <div class="source-item">
+                    <div class="source-icon" [class]="src.bookTitle ? 'epub' : 'pdf'">
+                      {{ fileTypeLabel('epub') }}
+                    </div>
+                    <div class="source-info">
+                      <div class="source-book">{{ src.bookTitle }}</div>
+                      <div class="source-detail">
+                        @if (src.chapter) { {{ src.chapter }} · }
+                        @if (src.page) { p. {{ src.page }} }
+                      </div>
+                    </div>
+                    <span class="source-score" [class]="scoreClass(src.score)">
+                      {{ scoreLabel(src.score) }}
+                    </span>
+                  </div>
+                }
+              </div>
+            }
+          </div>
+        </div>
+      }
+    }
+
+    @if (loading()) {
+      <div class="msg-assistant">
+        <div class="bubble-assistant spinner-bubble">
+          <div class="assistant-label">
+            <div class="assistant-dot"></div>
+            <span class="assistant-name">BookBrain</span>
+          </div>
+          <div class="kitt-bar" #kittBar>
+            @for (seg of [0,1,2,3,4,5,6,7,8,9,10,11]; track seg) {
+              <div class="seg"></div>
+            }
+          </div>
+        </div>
+      </div>
+    }
+
+  </div>
+
+  <!-- ══ INPUT BAR ══ -->
+  <div class="input-bar">
+    <div class="input-inner" [class.focused]="query.length > 0">
+      <input
+        class="input-field"
+        [(ngModel)]="query"
+        (keydown.enter)="submit()"
+        placeholder="Ask your books..."
+      />
+      <button
+        class="send-btn"
+        (click)="submit()"
+        [disabled]="loading() || !query.trim()"
+      >↑</button>
+    </div>
+  </div>
+
+</div>

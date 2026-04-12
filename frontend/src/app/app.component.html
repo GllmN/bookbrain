@@ -1,0 +1,93 @@
+<div class="layout">
+
+  <!-- ══ SIDEBAR ══ -->
+  <aside class="sidebar">
+
+    <div class="sidebar-header">
+      <div class="sidebar-logo">
+        <div class="sidebar-logo-icon">B</div>
+        <span class="sidebar-logo-text">BookBrain</span>
+      </div>
+      <button class="new-chat-btn" (click)="newChat()" title="New chat">+</button>
+    </div>
+
+    <div class="sidebar-search">
+      <span class="sidebar-search-icon">⌕</span>
+      <input
+        [(ngModel)]="historyFilter"
+        [ngModel]="historyFilter()"
+        (ngModelChange)="historyFilter.set($event)"
+        placeholder="Search conversations..."
+      />
+    </div>
+
+    <div class="sidebar-list">
+      @if (filteredGroups().length === 0) {
+        <p class="sidebar-empty">No history yet</p>
+      }
+      @for (group of filteredGroups(); track group.label) {
+        <div class="sidebar-section">{{ group.label }}</div>
+        @for (session of group.sessions; track session.id) {
+          <div
+            class="conv-item"
+            [class.active]="session.id === activeSessionId()"
+            (click)="selectSession(session.id)"
+          >
+            <div class="conv-icon">
+              {{ session.type === 'ask' ? '📖' : '🔍' }}
+            </div>
+            <div class="conv-info">
+              <div class="conv-title">{{ session.title }}</div>
+              @if (session.messages?.length) {
+                <div class="conv-preview">
+                  {{ session.messages![session.messages!.length - 1].content | slice:0:50 }}
+                </div>
+              }
+            </div>
+            <button
+              class="conv-delete"
+              (click)="deleteSession(session.id, $event)"
+              title="Delete"
+            >✕</button>
+          </div>
+        }
+      }
+    </div>
+
+    <div class="sidebar-footer">
+      <span class="sidebar-stats">
+        {{ sessions().length }} sessions · {{ totalChunks() | number }} chunks
+      </span>
+      <div class="footer-actions">
+        <button
+          class="model-btn"
+          (click)="toggleModelPicker()"
+          [class.active]="showModelPicker()"
+          title="Select model"
+        >
+          <span class="model-btn-icon">✦</span>
+          <span class="model-btn-label">{{ modelService.selectedModelLabel() }}</span>
+        </button>
+        <button class="theme-toggle" (click)="toggleTheme()" title="Toggle theme">
+          {{ isDark() ? '☽' : '☀' }}
+        </button>
+      </div>
+    </div>
+
+  </aside>
+
+  @if (showModelPicker()) {
+    <app-model-picker
+      [models]="modelService.models()"
+      [selectedModelId]="modelService.selectedModelId()"
+      (modelSelected)="modelService.select($event)"
+      (closed)="showModelPicker.set(false)"
+    />
+  }
+
+  <!-- ══ MAIN ══ -->
+  <div class="main">
+    <router-outlet />
+  </div>
+
+</div>

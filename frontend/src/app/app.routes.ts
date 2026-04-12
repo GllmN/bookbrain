@@ -3,8 +3,13 @@ import { Routes } from '@angular/router';
 export const routes: Routes = [
   {
     path: '',
-    redirectTo: 'search',
+    redirectTo: 'qa',
     pathMatch: 'full',
+  },
+  {
+    path: 'qa',
+    loadComponent: () =>
+      import('./pages/qa/qa.component').then((m) => m.QaComponent),
   },
   {
     path: 'search',

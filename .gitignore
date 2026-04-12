@@ -13,6 +13,8 @@ dist/
 library/
 chroma_db/
 bookbrain.db
+bookbrain.db-wal
+bookbrain.db-shm
 
 # Env
 .env

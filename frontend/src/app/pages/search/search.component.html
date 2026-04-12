@@ -1,18 +1,98 @@
-<div class="search-layout">
-  <app-history-panel
-    [sessions]="sessions()"
-    [activeId]="activeSessionId()"
-    (sessionSelected)="selectSession($event)"
-    (sessionDeleted)="deleteSession($event)"
-    (newChat)="startNewChat()"
-    (clearAll)="clearHistory()" />
+<div class="page">
 
-  <app-search-view
-    [session]="activeSession()"
-    [books]="books()"
-    [loading]="loading()"
-    [models]="models()"
-    [selectedModel]="selectedModel()"
-    (modelChange)="selectedModel.set($event)"
-    (submitted)="onSubmit($event)" />
+  <!-- ══ HEADER ══ -->
+  <div class="main-header">
+    <nav class="main-nav">
+      <a class="nav-item" routerLink="/search" routerLinkActive="active">Search</a>
+      <a class="nav-item" routerLink="/qa" routerLinkActive="active">Q&amp;A</a>
+      <a class="nav-item" routerLink="/library" routerLinkActive="active">Library</a>
+    </nav>
+    <div class="filter-bar">
+      <button
+        class="filter-chip"
+        [class.active]="selectedBookIds().length === 0"
+        (click)="selectedBookIds.set([])"
+      >All books</button>
+      @for (book of books(); track book.id) {
+        <button
+          class="filter-chip"
+          [class.active]="isBookSelected(book.id)"
+          (click)="toggleBook(book.id)"
+        >{{ book.title | slice:0:20 }}{{ book.title.length > 20 ? '…' : '' }}</button>
+      }
+    </div>
+  </div>
+
+  <!-- ══ CONTENT ══ -->
+  <div class="content">
+
+    <!-- Search box -->
+    <div class="search-box">
+      <span class="search-icon">⌕</span>
+      <input
+        class="search-input"
+        [(ngModel)]="query"
+        (keydown.enter)="submit()"
+        placeholder="Search your books..."
+      />
+      <button class="search-btn" (click)="submit()" [disabled]="loading()">
+        @if (loading()) { … } @else { Search }
+      </button>
+    </div>
+
+    <!-- Stats -->
+    @if (results().length > 0) {
+      <div class="stats">
+        <span class="stat-pill">{{ results().length }} results</span>
+        <span class="stat-pill orange">{{ searchTook() }}ms</span>
+        <span class="stat-pill neutral">{{ lastQuery() }}</span>
+      </div>
+    }
+
+    <!-- Results -->
+    @if (results().length > 0) {
+      <div class="results">
+        @for (result of results(); track result.chunkId) {
+          <div class="result-card">
+            <div class="result-header">
+              <span class="result-title">{{ result.bookTitle }}</span>
+              <span class="result-score" [class]="scoreClass(result.score)">
+                {{ scoreLabel(result.score) }}
+              </span>
+            </div>
+            @if (result.chapter) {
+              <div class="result-chapter">{{ result.chapter }}</div>
+            }
+            <div class="result-excerpt">
+              {{ result.content | slice:0:400 }}{{ result.content.length > 400 ? '…' : '' }}
+            </div>
+            <div class="result-footer">
+              <span class="tag type-epub">EPUB</span>
+              @if (result.page) {
+                <span class="tag">p. {{ result.page }}</span>
+              }
+            </div>
+          </div>
+        }
+      </div>
+    }
+
+    <!-- Empty states -->
+    @if (!loading() && results().length === 0 && !lastQuery()) {
+      <div class="empty-state">
+        <div class="empty-icon">⌕</div>
+        <p class="empty-title">Semantic search</p>
+        <p class="empty-hint">Find concepts across all your books, not just keywords.</p>
+      </div>
+    }
+
+    @if (!loading() && results().length === 0 && lastQuery()) {
+      <div class="empty-state">
+        <div class="empty-icon">📚</div>
+        <p class="empty-title">No results found</p>
+        <p class="empty-hint">Try different keywords or broaden your search.</p>
+      </div>
+    }
+
+  </div>
 </div>

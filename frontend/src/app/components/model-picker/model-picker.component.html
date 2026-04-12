@@ -1,0 +1,41 @@
+<div class="overlay" (click)="closed.emit()">
+  <div class="dialog" (click)="$event.stopPropagation()">
+
+    <div class="dialog-header">
+      <div class="dialog-title-group">
+        <span class="dialog-icon">✦</span>
+        <h3 class="dialog-title">Select model</h3>
+      </div>
+      <button class="dialog-close" (click)="closed.emit()">✕</button>
+    </div>
+
+    @if (models().length === 0) {
+      <div class="empty">
+        <p class="empty-text">No models available.</p>
+        <p class="empty-hint">Make sure Ollama is running or an API key is configured.</p>
+      </div>
+    } @else {
+      <div class="model-list">
+        @for (model of models(); track model.id) {
+          <button
+            class="model-item"
+            [class.selected]="model.id === selectedModelId()"
+            (click)="select(model.id)"
+          >
+            <div class="model-icon" [class]="model.provider">
+              {{ providerIcon(model.provider) }}
+            </div>
+            <div class="model-info">
+              <span class="model-name">{{ model.name }}</span>
+              <span class="model-provider">{{ providerLabel(model.provider) }}</span>
+            </div>
+            @if (model.id === selectedModelId()) {
+              <span class="model-check">✓</span>
+            }
+          </button>
+        }
+      </div>
+    }
+
+  </div>
+</div>
