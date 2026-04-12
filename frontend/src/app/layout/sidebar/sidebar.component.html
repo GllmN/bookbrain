@@ -55,15 +55,6 @@
       {{ sessions().length }} sessions · {{ totalChunks() | number }} chunks
     </span>
     <div class="footer-actions">
-      <button
-        class="model-btn"
-        (click)="toggleModelPicker()"
-        [class.active]="showModelPicker()"
-        title="Select model"
-      >
-        <span class="model-btn-icon">✦</span>
-        <span class="model-btn-label">{{ modelService.selectedModelLabel() }}</span>
-      </button>
       <button class="theme-toggle" (click)="toggleTheme()" title="Toggle theme">
         {{ isDark() ? '☽' : '☀' }}
       </button>
@@ -71,12 +62,3 @@
   </div>
 
 </aside>
-
-@if (showModelPicker()) {
-  <app-model-picker
-    [models]="modelService.models()"
-    [selectedModelId]="modelService.selectedModelId()"
-    (modelSelected)="modelService.select($event)"
-    (closed)="showModelPicker.set(false)"
-  />
-}

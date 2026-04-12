@@ -20,9 +20,14 @@ body {
   height: 100%;
   margin: 0;
   font-family: var(--font);
+  font-size: 14px;
+  line-height: 1.6;
   background: var(--bg);
   color: var(--text);
   transition: background 0.3s, color 0.3s;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
 }
 
 *,

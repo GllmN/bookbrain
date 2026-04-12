@@ -1,0 +1,60 @@
+<div class="overlay" (click)="closed.emit()">
+  <div class="dialog" (click)="$event.stopPropagation()">
+
+    <div class="dialog-header">
+      <div class="dialog-title-group">
+        <span class="dialog-icon">📚</span>
+        <h3 class="dialog-title">Filter by book</h3>
+      </div>
+      <button class="dialog-close" (click)="closed.emit()">✕</button>
+    </div>
+
+    @if (books().length === 0) {
+      <div class="empty">
+        <p class="empty-text">No books indexed yet.</p>
+        <p class="empty-hint">Go to Library to index your books.</p>
+      </div>
+    } @else {
+      <div class="book-list">
+
+        <button
+          class="book-item"
+          [class.selected]="selectedCount() === 0"
+          (click)="selectAll()"
+        >
+          <div class="book-icon all">✦</div>
+          <div class="book-info">
+            <span class="book-name">All books</span>
+            <span class="book-meta">{{ books().length }} books indexed</span>
+          </div>
+          @if (selectedCount() === 0) {
+            <span class="book-check">✓</span>
+          }
+        </button>
+
+        <div class="separator"></div>
+
+        @for (book of books(); track book.id) {
+          <button
+            class="book-item"
+            [class.selected]="isSelected(book.id)"
+            (click)="toggle(book.id)"
+          >
+            <div class="book-icon" [class]="book.fileType">
+              {{ fileTypeLabel(book.fileType) }}
+            </div>
+            <div class="book-info">
+              <span class="book-name">{{ book.title }}</span>
+              <span class="book-meta">{{ book.author }}</span>
+            </div>
+            @if (isSelected(book.id)) {
+              <span class="book-check">✓</span>
+            }
+          </button>
+        }
+
+      </div>
+    }
+
+  </div>
+</div>

@@ -1,27 +1,14 @@
 <div class="page">
 
   <!-- ══ HEADER ══ -->
-  <div class="main-header">
-    <nav class="main-nav">
-      <a class="nav-item" routerLink="/search" routerLinkActive="active">Search</a>
-      <a class="nav-item active" routerLink="/qa" routerLinkActive="active">Q&amp;A</a>
-      <a class="nav-item" routerLink="/library" routerLinkActive="active">Library</a>
-    </nav>
-    <div class="filter-bar">
-      <button
-        class="filter-chip"
-        [class.active]="selectedBookIds().length === 0"
-        (click)="selectedBookIds.set([])"
-      >All books</button>
-      @for (book of books(); track book.id) {
-        <button
-          class="filter-chip"
-          [class.active]="isBookSelected(book.id)"
-          (click)="toggleBook(book.id)"
-        >{{ book.title | slice:0:20 }}{{ book.title.length > 20 ? '…' : '' }}</button>
-      }
-    </div>
-  </div>
+  <app-header>
+    <app-header-filters
+      [books]="books()"
+      [selectedBookIds]="selectedBookIds()"
+      (selectionChange)="selectedBookIds.set($event)"
+    />
+
+  </app-header>
 
   <!-- ══ CHAT AREA ══ -->
   <div class="chat-area" #chatArea>
@@ -105,6 +92,7 @@
         (keydown.enter)="submit()"
         placeholder="Ask your books..."
       />
+
       <button
         class="send-btn"
         (click)="submit()"

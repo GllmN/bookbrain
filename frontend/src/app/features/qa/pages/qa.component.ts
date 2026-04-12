@@ -8,18 +8,18 @@ import {
   ElementRef,
   OnInit,
 } from '@angular/core';
-import { RouterLink, RouterLinkActive } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { SlicePipe } from '@angular/common';
 import { ConversationService } from '../../../core/services/conversation.service';
 import { ModelService } from '../../../core/services/model.service';
 import { ApiService } from '../../../core/services/api.service';
 import { Book, ChatMessage, SearchResult } from '../../../core/models/types';
+import { HeaderComponent } from '../../../shared/components/header/header.component';
+import { HeaderFiltersComponent } from '../../../shared/components/header/header-filters/header-filters.component';
 
 @Component({
   selector: 'app-qa',
   standalone: true,
-  imports: [RouterLink, RouterLinkActive, FormsModule, SlicePipe],
+  imports: [HeaderComponent, HeaderFiltersComponent, FormsModule],
   templateUrl: './qa.component.html',
   styleUrl: './qa.component.scss',
 })
@@ -52,17 +52,6 @@ export class QaComponent implements OnInit {
 
   ngOnInit() {
     this.#apiService.getBooks().subscribe({ next: (data) => this.books.set(data.books) });
-  }
-
-  toggleBook(id: string) {
-    const current = this.selectedBookIds();
-    this.selectedBookIds.set(
-      current.includes(id) ? current.filter(b => b !== id) : [...current, id]
-    );
-  }
-
-  isBookSelected(id: string) {
-    return this.selectedBookIds().includes(id);
   }
 
   newChat() {

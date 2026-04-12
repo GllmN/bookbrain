@@ -1,0 +1,39 @@
+<div class="actions">
+
+  <button
+    class="action-pill"
+    [class.active]="showBookPicker()"
+    (click)="toggleBookPicker()"
+  >
+    <span class="pill-icon">📚</span>
+    <span class="pill-label">{{ booksLabel() }}</span>
+  </button>
+
+  <button
+    class="action-pill"
+    [class.active]="showModelPicker()"
+    (click)="toggleModelPicker()"
+  >
+    <span class="pill-icon">✦</span>
+    <span class="pill-label">{{ modelService.selectedModelLabel() }}</span>
+  </button>
+
+</div>
+
+@if (showBookPicker()) {
+  <app-book-picker
+    [books]="books()"
+    [selectedBookIds]="selectedBookIds()"
+    (selectionChange)="selectionChange.emit($event)"
+    (closed)="showBookPicker.set(false)"
+  />
+}
+
+@if (showModelPicker()) {
+  <app-model-picker
+    [models]="modelService.models()"
+    [selectedModelId]="modelService.selectedModelId()"
+    (modelSelected)="modelService.select($event)"
+    (closed)="showModelPicker.set(false)"
+  />
+}

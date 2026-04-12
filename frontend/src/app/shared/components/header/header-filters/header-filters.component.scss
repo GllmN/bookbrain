@@ -1,0 +1,50 @@
+:host {
+  display: contents;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.action-pill {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  border-radius: var(--radius-pill);
+  border: 0.5px solid var(--border);
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 500;
+  font-family: var(--font);
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+
+  &:hover {
+    border-color: var(--accent);
+    color: var(--accent-text);
+    background: var(--accent-soft);
+  }
+
+  &.active {
+    border-color: var(--accent);
+    color: var(--accent-text);
+    background: var(--accent-soft);
+  }
+}
+
+.pill-icon {
+  font-size: 13px;
+  line-height: 1;
+}
+
+.pill-label {
+  max-width: 120px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
