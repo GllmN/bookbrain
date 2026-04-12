@@ -1,5 +1,5 @@
 import { provideHttpClient } from '@angular/common/http';
-import { provideAnimations } from '@angular/platform-browser/animations';
+import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 
 /**
  * Core providers — singleton infrastructure (HTTP, animations, guards, interceptors).
@@ -7,5 +7,5 @@ import { provideAnimations } from '@angular/platform-browser/animations';
  */
 export const coreProviders = [
   provideHttpClient(),
-  provideAnimations(),
+  provideAnimationsAsync(),
 ];

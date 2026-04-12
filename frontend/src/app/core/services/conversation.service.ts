@@ -4,7 +4,7 @@ import { ChatMessage, HistorySession } from '../models/types';
 
 @Injectable({ providedIn: 'root' })
 export class ConversationService {
-  private readonly api = inject(ApiService);
+  readonly #apiService = inject(ApiService);
 
   sessions = signal<HistorySession[]>([]);
   activeSessionId = signal<string | null>(null);
@@ -14,7 +14,7 @@ export class ConversationService {
   );
 
   loadSessions() {
-    this.api.getHistory().subscribe({
+    this.#apiService.getHistory().subscribe({
       next: (sessions) => this.sessions.set(sessions),
     });
   }
@@ -30,19 +30,19 @@ export class ConversationService {
   deleteSession(id: string) {
     if (this.activeSessionId() === id) this.activeSessionId.set(null);
     this.sessions.update(s => s.filter(x => x.id !== id));
-    this.api.deleteHistorySession(id).subscribe();
+    this.#apiService.deleteHistorySession(id).subscribe();
   }
 
   clearHistory() {
     this.activeSessionId.set(null);
     this.sessions.set([]);
-    this.api.clearHistory().subscribe();
+    this.#apiService.clearHistory().subscribe();
   }
 
   createSession(session: HistorySession) {
     this.sessions.update(s => [session, ...s]);
     this.activeSessionId.set(session.id);
-    this.api.createSession(session).subscribe();
+    this.#apiService.createSession(session).subscribe();
   }
 
   patchSession(id: string, patch: Partial<HistorySession>) {

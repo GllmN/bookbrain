@@ -4,7 +4,7 @@ import { LlmModel } from '../models/types';
 
 @Injectable({ providedIn: 'root' })
 export class ModelService {
-  private readonly api = inject(ApiService);
+  readonly #apiService = inject(ApiService);
 
   models = signal<LlmModel[]>([]);
   selectedModelId = signal('');
@@ -21,7 +21,7 @@ export class ModelService {
   });
 
   loadModels() {
-    this.api.getModels().subscribe({
+    this.#apiService.getModels().subscribe({
       next: (data) => {
         this.models.set(data.models);
         this.selectedModelId.set(data.current);
