@@ -10,7 +10,7 @@ import {
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ConversationService } from '../../../core/services/conversation.service';
-import { ModelService } from '../../../core/services/model.service';
+import { LlmModelService } from '../../../core/services/llm-model.service';
 import { ApiService } from '../../../core/services/api.service';
 import { Book, ChatMessage, SearchResult } from '../../../core/models/types';
 import { HeaderComponent } from '../../../shared/components/header/header.component';
@@ -27,7 +27,7 @@ export class QaComponent implements OnInit {
   @ViewChild('chatArea') chatAreaRef!: ElementRef<HTMLDivElement>;
 
   readonly #conversationService = inject(ConversationService);
-  readonly #modelService = inject(ModelService);
+  readonly #llmModelService = inject(LlmModelService);
   readonly #apiService = inject(ApiService);
 
   books = signal<Book[]>([]);
@@ -92,9 +92,9 @@ export class QaComponent implements OnInit {
 
     let sources: SearchResult[] = [];
     let messageAdded = false;
-    const model = this.#modelService.selectedModelId() || undefined;
+    const llmModelId = this.#llmModelService.selectedModelId() || undefined;
 
-    this.#apiService.streamAsk(q, ids, history, model).subscribe({
+    this.#apiService.streamAsk(q, ids, history, llmModelId).subscribe({
       next: (event) => {
         if (event.type === 'sources') {
           sources = event.sources;
@@ -146,6 +146,11 @@ export class QaComponent implements OnInit {
         }
       },
     });
+  }
+
+  scrollToBottom() {
+    const el = this.chatAreaRef?.nativeElement;
+    if (el) el.scrollTo({ top: el.scrollHeight, behavior: 'smooth' });
   }
 
   isSourcesExpanded(msgIdx: number): boolean {

@@ -1,5 +1,5 @@
 import { Component, inject, input, output, signal, computed } from '@angular/core';
-import { ModelService } from '../../../core/services/model.service';
+import { LlmModelService } from '../../../core/services/llm-model.service';
 import { BookPickerComponent } from './book-picker/book-picker.component';
 import { ModelPickerComponent } from './model-picker/model-picker.component';
 import { Book } from '../../../core/models/types';
@@ -12,7 +12,7 @@ import { Book } from '../../../core/models/types';
   styleUrl: './header-filters.component.scss',
 })
 export class HeaderFiltersComponent {
-  readonly modelService = inject(ModelService);
+  readonly llmModelService = inject(LlmModelService);
 
   books = input<Book[]>([]);
   selectedBookIds = input<string[]>([]);

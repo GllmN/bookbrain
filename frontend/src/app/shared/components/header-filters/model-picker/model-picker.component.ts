@@ -9,7 +9,7 @@ import { LlmModel } from '../../../../core/models/types';
   styleUrl: './model-picker.component.scss',
 })
 export class ModelPickerComponent {
-  models = input<LlmModel[]>([]);
+  llmModels = input<LlmModel[]>([]);
   selectedModelId = input('');
 
   modelSelected = output<string>();

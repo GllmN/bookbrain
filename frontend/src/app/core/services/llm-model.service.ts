@@ -3,19 +3,19 @@ import { ApiService } from './api.service';
 import { LlmModel } from '../models/types';
 
 @Injectable({ providedIn: 'root' })
-export class ModelService {
+export class LlmModelService {
   readonly #apiService = inject(ApiService);
 
-  models = signal<LlmModel[]>([]);
+  llmModels = signal<LlmModel[]>([]);
   selectedModelId = signal('');
 
-  selectedModel = computed(
-    () => this.models().find(m => m.id === this.selectedModelId()) ?? null
+  selectedLlmModel = computed(
+    () => this.llmModels().find(m => m.id === this.selectedModelId()) ?? null
   );
 
-  /** Nom court pour affichage dans le footer (max 14 chars) */
+  /** Nom court pour affichage (max 14 chars) */
   selectedModelLabel = computed(() => {
-    const llmModel = this.selectedModel();
+    const llmModel = this.selectedLlmModel();
     if (!llmModel) return 'No model';
     return llmModel.name.length > 14 ? llmModel.name.slice(0, 13) + '…' : llmModel.name;
   });
@@ -23,7 +23,7 @@ export class ModelService {
   loadModels() {
     this.#apiService.getModels().subscribe({
       next: (data) => {
-        this.models.set(data.models);
+        this.llmModels.set(data.models);
         this.selectedModelId.set(data.current);
       },
     });

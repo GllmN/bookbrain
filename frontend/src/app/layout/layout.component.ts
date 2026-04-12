@@ -1,7 +1,7 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { ConversationService } from '../core/services/conversation.service';
-import { ModelService } from '../core/services/model.service';
+import { LlmModelService } from '../core/services/llm-model.service';
 import { SidebarComponent } from './sidebar/sidebar.component';
 
 @Component({
@@ -24,10 +24,10 @@ import { SidebarComponent } from './sidebar/sidebar.component';
 })
 export class LayoutComponent implements OnInit {
   readonly #conversationService = inject(ConversationService);
-  readonly #modelService = inject(ModelService);
+  readonly #llmModelService = inject(LlmModelService);
 
   ngOnInit() {
     this.#conversationService.loadSessions();
-    this.#modelService.loadModels();
+    this.#llmModelService.loadModels();
   }
 }

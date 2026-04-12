@@ -15,7 +15,7 @@
     (click)="toggleModelPicker()"
   >
     <span class="pill-icon">✦</span>
-    <span class="pill-label">{{ modelService.selectedModelLabel() }}</span>
+    <span class="pill-label">{{ llmModelService.selectedModelLabel() }}</span>
   </button>
 
 </div>
@@ -31,9 +31,9 @@
 
 @if (showModelPicker()) {
   <app-model-picker
-    [models]="modelService.models()"
-    [selectedModelId]="modelService.selectedModelId()"
-    (modelSelected)="modelService.select($event)"
+    [llmModels]="llmModelService.llmModels()"
+    [selectedModelId]="llmModelService.selectedModelId()"
+    (modelSelected)="llmModelService.select($event)"
     (closed)="showModelPicker.set(false)"
   />
 }

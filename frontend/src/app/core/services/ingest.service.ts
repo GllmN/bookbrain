@@ -31,7 +31,7 @@ export class IngestService {
     });
   }
 
-  #startPolling() {
+  #startPolling(): void {
     this.#stopPolling();
     this.#pollInterval = setInterval(() => {
       this.#apiService.getIngestStatus().subscribe({
@@ -47,7 +47,7 @@ export class IngestService {
     }, 3000);
   }
 
-  #stopPolling() {
+  #stopPolling(): void {
     if (this.#pollInterval !== null) {
       clearInterval(this.#pollInterval);
       this.#pollInterval = null;
