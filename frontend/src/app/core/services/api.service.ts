@@ -38,6 +38,16 @@ export class ApiService {
       .pipe(map(() => undefined));
   }
 
+  uploadBooks(files: File[]): Observable<HttpEvent<ApiResponse<{ uploaded: number; files: string[] }>>> {
+    const form = new FormData();
+    files.forEach(f => form.append('files', f));
+    return this.http.post<ApiResponse<{ uploaded: number; files: string[] }>>(
+      `${this.baseUrl}/books/upload`,
+      form,
+      { reportProgress: true, observe: 'events' },
+    );
+  }
+
   getModels(): Observable<{ models: LlmModel[]; current: string }> {
     return this.http
       .get<ApiResponse<{ models: LlmModel[]; current: string }>>(`${this.baseUrl}/models`)
