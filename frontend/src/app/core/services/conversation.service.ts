@@ -1,6 +1,6 @@
 import { Injectable, inject, signal, computed } from '@angular/core';
 import { ApiService } from './api.service';
-import { ChatMessage, HistorySession, SearchResult } from '../models/types';
+import { ChatMessage, HistorySession } from '../models/types';
 
 @Injectable({ providedIn: 'root' })
 export class ConversationService {
@@ -13,9 +13,6 @@ export class ConversationService {
     this.sessions().find(s => s.id === this.activeSessionId()) ?? null
   );
 
-  totalChunks = signal(0);
-
-  /** Charge l'historique depuis l'API (appelé au démarrage) */
   loadSessions() {
     this.api.getHistory().subscribe({
       next: (sessions) => this.sessions.set(sessions),

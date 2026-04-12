@@ -11,11 +11,12 @@ import {
   IngestStatus,
   HistorySession,
 } from '../models/types';
+import { environment } from '../../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
 export class ApiService {
   private readonly http = inject(HttpClient);
-  private readonly baseUrl = 'http://localhost:3000/api';
+  private readonly baseUrl = `${environment.apiUrl}/api`;
 
   // ── Books ─────────────────────────────────────
 
@@ -47,11 +48,7 @@ export class ApiService {
 
   search(query: string, limit = 10, bookIds?: string[]): Observable<SearchResponse> {
     return this.http
-      .post<ApiResponse<SearchResponse>>(`${this.baseUrl}/search`, {
-        query,
-        limit,
-        bookIds,
-      })
+      .post<ApiResponse<SearchResponse>>(`${this.baseUrl}/search`, { query, limit, bookIds })
       .pipe(map((res) => res.data!));
   }
 
@@ -64,16 +61,11 @@ export class ApiService {
     model?: string
   ): Observable<AskResponse> {
     return this.http
-      .post<ApiResponse<AskResponse>>(`${this.baseUrl}/ask`, {
-        question,
-        bookIds,
-        history,
-        model,
-      })
+      .post<ApiResponse<AskResponse>>(`${this.baseUrl}/ask`, { question, bookIds, history, model })
       .pipe(map((res) => res.data!));
   }
 
-  // ── Ask streaming ─────────────────────────────────
+  // ── Ask streaming ─────────────────────────────
 
   streamAsk(
     question: string,
@@ -125,7 +117,7 @@ export class ApiService {
     });
   }
 
-  // ── History ───────────────────────────────────────
+  // ── History ───────────────────────────────────
 
   getHistory(): Observable<HistorySession[]> {
     return this.http
@@ -139,7 +131,10 @@ export class ApiService {
       .pipe(map((res) => res.data!));
   }
 
-  updateSession(id: string, patch: Partial<Pick<HistorySession, 'messages' | 'searchResults' | 'searchTook'>>): Observable<void> {
+  updateSession(
+    id: string,
+    patch: Partial<Pick<HistorySession, 'messages' | 'searchResults' | 'searchTook'>>
+  ): Observable<void> {
     return this.http
       .patch<ApiResponse>(`${this.baseUrl}/history/${id}`, patch)
       .pipe(map(() => undefined));

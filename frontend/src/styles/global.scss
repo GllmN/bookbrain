@@ -1,0 +1,51 @@
+@use '@angular/material' as mat;
+@use './variables' as *;
+@use './mixins' as *;
+
+// ── Angular Material — blue theme (fonctionnalité uniquement) ─────────────────
+html {
+  @include mat.theme((
+    color: (
+      theme-type: dark,
+      primary: mat.$blue-palette,
+    ),
+    typography: 'Plus Jakarta Sans',
+    density: 0,
+  ));
+}
+
+// ── Base ──────────────────────────────────────────────────────────────────────
+html,
+body {
+  height: 100%;
+  margin: 0;
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--text);
+  transition: background 0.3s, color 0.3s;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+app-root {
+  display: flex;
+  height: 100%;
+}
+
+// ── Scrollbars discrètes ──────────────────────────────────────────────────────
+::-webkit-scrollbar        { width: 4px; height: 4px; }
+::-webkit-scrollbar-track  { background: transparent; }
+::-webkit-scrollbar-thumb  { background: var(--border); border-radius: 2px; }
+::-webkit-scrollbar-thumb:hover { background: var(--text-tertiary); }
+
+// ── Snackbar Material ─────────────────────────────────────────────────────────
+.mat-mdc-snack-bar-container {
+  --mdc-snackbar-container-color: var(--card);
+  --mdc-snackbar-supporting-text-color: var(--text);
+  border: 0.5px solid var(--border);
+  border-radius: var(--radius-sm) !important;
+}

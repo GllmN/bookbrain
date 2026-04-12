@@ -1,0 +1,50 @@
+// ══ Layout ════════════════════════════════════════════════════════════════════
+@mixin flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@mixin flex-column {
+  display: flex;
+  flex-direction: column;
+}
+
+// ══ Typography ════════════════════════════════════════════════════════════════
+@mixin text-truncate {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+@mixin text-clamp($lines: 3) {
+  display: -webkit-box;
+  -webkit-line-clamp: $lines;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+// ══ Cards ═════════════════════════════════════════════════════════════════════
+@mixin card-hover-glow {
+  transition: all 0.3s ease;
+
+  &::after {
+    content: '';
+    position: absolute;
+    left: 0; right: 0; bottom: 0;
+    height: 80px;
+    background: linear-gradient(to top, var(--halo), transparent);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    border-radius: 0 0 var(--radius) var(--radius);
+    pointer-events: none;
+  }
+
+  &:hover {
+    background: var(--card-hover);
+    border-color: var(--accent);
+    box-shadow: 0 0 0 1px var(--glow), 0 0 24px var(--glow-spread);
+
+    &::after { opacity: 1; }
+  }
+}

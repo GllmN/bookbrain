@@ -1,10 +1,5 @@
-import {
-  Component,
-  input,
-  output,
-  HostListener,
-} from '@angular/core';
-import { LlmModel } from '../../models/types';
+import { Component, input, output, HostListener } from '@angular/core';
+import { LlmModel } from '../../../core/models/types';
 
 @Component({
   selector: 'app-model-picker',

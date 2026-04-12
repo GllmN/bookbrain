@@ -1,10 +1,10 @@
 import { Component, inject, signal, OnInit } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { DecimalPipe, SlicePipe } from '@angular/common';
-import { ApiService } from '../../services/api.service';
-import { ConversationService } from '../../services/conversation.service';
-import { Book, SearchResult } from '../../models/types';
+import { SlicePipe } from '@angular/common';
+import { ApiService } from '../../../core/services/api.service';
+import { ConversationService } from '../../../core/services/conversation.service';
+import { Book, SearchResult } from '../../../core/models/types';
 
 @Component({
   selector: 'app-search',
@@ -14,8 +14,8 @@ import { Book, SearchResult } from '../../models/types';
   styleUrl: './search.component.scss',
 })
 export class SearchComponent implements OnInit {
-  private readonly api = inject(ApiService);
-  private readonly conv = inject(ConversationService);
+  readonly #apiService = inject(ApiService);
+  readonly #conversationService = inject(ConversationService);
 
   books = signal<Book[]>([]);
   selectedBookIds = signal<string[]>([]);
@@ -26,15 +26,14 @@ export class SearchComponent implements OnInit {
   lastQuery = signal('');
 
   ngOnInit() {
-    this.api.getBooks().subscribe({ next: (data) => this.books.set(data.books) });
+    this.#apiService.getBooks().subscribe({ next: (data) => this.books.set(data.books) });
   }
 
   toggleBook(id: string) {
     const current = this.selectedBookIds();
-    const next = current.includes(id)
-      ? current.filter(b => b !== id)
-      : [...current, id];
-    this.selectedBookIds.set(next);
+    this.selectedBookIds.set(
+      current.includes(id) ? current.filter(b => b !== id) : [...current, id]
+    );
   }
 
   isBookSelected(id: string) {
@@ -50,23 +49,16 @@ export class SearchComponent implements OnInit {
     this.loading.set(true);
     this.results.set([]);
 
-    this.api.search(q, 15, ids).subscribe({
+    this.#apiService.search(q, 15, ids).subscribe({
       next: (res) => {
         this.results.set(res.results);
         this.searchTook.set(res.took);
         this.loading.set(false);
 
-        // Persister dans l'historique
-        const session = this.conv.buildSession('search', q);
-        this.conv.createSession(session);
-        this.conv.patchSession(session.id, {
-          searchResults: res.results,
-          searchTook: res.took,
-        });
-        this.api.updateSession(session.id, {
-          searchResults: res.results,
-          searchTook: res.took,
-        }).subscribe();
+        const session = this.#conversationService.buildSession('search', q);
+        this.#conversationService.createSession(session);
+        this.#conversationService.patchSession(session.id, { searchResults: res.results, searchTook: res.took });
+        this.#apiService.updateSession(session.id, { searchResults: res.results, searchTook: res.took }).subscribe();
       },
       error: () => this.loading.set(false),
     });
@@ -78,13 +70,5 @@ export class SearchComponent implements OnInit {
 
   scoreLabel(score: number): string {
     return `${(score * 100).toFixed(0)}%`;
-  }
-
-  fileTypeClass(fileType: string): string {
-    return fileType?.toLowerCase() === 'pdf' ? 'pdf' : 'epub';
-  }
-
-  fileTypeLabel(fileType: string): string {
-    return fileType?.toUpperCase() ?? 'EP';
   }
 }

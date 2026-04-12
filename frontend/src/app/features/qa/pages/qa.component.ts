@@ -11,10 +11,10 @@ import {
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { SlicePipe } from '@angular/common';
-import { ConversationService } from '../../services/conversation.service';
-import { ModelService } from '../../services/model.service';
-import { ApiService } from '../../services/api.service';
-import { Book, ChatMessage, SearchResult } from '../../models/types';
+import { ConversationService } from '../../../core/services/conversation.service';
+import { ModelService } from '../../../core/services/model.service';
+import { ApiService } from '../../../core/services/api.service';
+import { Book, ChatMessage, SearchResult } from '../../../core/models/types';
 
 @Component({
   selector: 'app-qa',
@@ -26,16 +26,16 @@ import { Book, ChatMessage, SearchResult } from '../../models/types';
 export class QaComponent implements OnInit {
   @ViewChild('chatArea') chatAreaRef!: ElementRef<HTMLDivElement>;
 
-  private readonly conv = inject(ConversationService);
-  private readonly modelService = inject(ModelService);
-  private readonly api = inject(ApiService);
+  readonly #conversationService = inject(ConversationService);
+  readonly #modelService = inject(ModelService);
+  readonly #apiService = inject(ApiService);
 
   books = signal<Book[]>([]);
   selectedBookIds = signal<string[]>([]);
   loading = signal(false);
   query = '';
 
-  session = this.conv.activeSession;
+  session = this.#conversationService.activeSession;
   messages = computed(() => this.session()?.messages ?? []);
 
   constructor() {
@@ -51,15 +51,14 @@ export class QaComponent implements OnInit {
   }
 
   ngOnInit() {
-    this.api.getBooks().subscribe({ next: (data) => this.books.set(data.books) });
+    this.#apiService.getBooks().subscribe({ next: (data) => this.books.set(data.books) });
   }
 
   toggleBook(id: string) {
     const current = this.selectedBookIds();
-    const next = current.includes(id)
-      ? current.filter(b => b !== id)
-      : [...current, id];
-    this.selectedBookIds.set(next);
+    this.selectedBookIds.set(
+      current.includes(id) ? current.filter(b => b !== id) : [...current, id]
+    );
   }
 
   isBookSelected(id: string) {
@@ -67,7 +66,7 @@ export class QaComponent implements OnInit {
   }
 
   newChat() {
-    this.conv.startNewChat();
+    this.#conversationService.startNewChat();
   }
 
   submit() {
@@ -80,8 +79,8 @@ export class QaComponent implements OnInit {
     let sessionId: string;
 
     if (!currentSession || currentSession.type !== 'ask') {
-      const session = this.conv.buildSession('ask', q);
-      this.conv.createSession(session);
+      const session = this.#conversationService.buildSession('ask', q);
+      this.#conversationService.createSession(session);
       sessionId = session.id;
     } else {
       sessionId = currentSession.id;
@@ -92,7 +91,7 @@ export class QaComponent implements OnInit {
       content: q,
       timestamp: new Date().toISOString(),
     };
-    this.conv.appendMessage(sessionId, userMsg);
+    this.#conversationService.appendMessage(sessionId, userMsg);
     this.loading.set(true);
 
     const history = (this.session()?.messages ?? [])
@@ -102,27 +101,27 @@ export class QaComponent implements OnInit {
 
     let sources: SearchResult[] = [];
     let messageAdded = false;
-    const model = this.modelService.selectedModelId() || undefined;
+    const model = this.#modelService.selectedModelId() || undefined;
 
-    this.api.streamAsk(q, ids, history, model).subscribe({
+    this.#apiService.streamAsk(q, ids, history, model).subscribe({
       next: (event) => {
         if (event.type === 'sources') {
           sources = event.sources;
         } else if (event.type === 'token') {
           if (!messageAdded) {
             this.loading.set(false);
-            this.conv.appendMessage(sessionId, {
+            this.#conversationService.appendMessage(sessionId, {
               role: 'assistant',
               content: event.content,
               timestamp: new Date().toISOString(),
             });
             messageAdded = true;
           } else {
-            this.conv.appendToken(sessionId, event.content);
+            this.#conversationService.appendToken(sessionId, event.content);
           }
         } else if (event.type === 'error') {
           this.loading.set(false);
-          this.conv.appendMessage(sessionId, {
+          this.#conversationService.appendMessage(sessionId, {
             role: 'assistant',
             content: 'Erreur lors de la génération de la réponse.',
             timestamp: new Date().toISOString(),
@@ -132,23 +131,23 @@ export class QaComponent implements OnInit {
       complete: () => {
         if (!messageAdded) {
           this.loading.set(false);
-          this.conv.appendMessage(sessionId, {
+          this.#conversationService.appendMessage(sessionId, {
             role: 'assistant',
             content: sources.length
-              ? 'Le modèle n\'a pas généré de réponse. Essaie à nouveau.'
+              ? "Le modèle n'a pas généré de réponse. Essaie à nouveau."
               : 'Aucun passage pertinent trouvé dans tes livres.',
             sources,
             timestamp: new Date().toISOString(),
           });
         } else if (sources.length) {
-          this.conv.updateLastMessage(sessionId, { sources });
+          this.#conversationService.updateLastMessage(sessionId, { sources });
         }
-        this.api.updateSession(sessionId, { messages: this.session()?.messages }).subscribe();
+        this.#apiService.updateSession(sessionId, { messages: this.session()?.messages }).subscribe();
       },
       error: () => {
         this.loading.set(false);
         if (!messageAdded) {
-          this.conv.appendMessage(sessionId, {
+          this.#conversationService.appendMessage(sessionId, {
             role: 'assistant',
             content: 'Erreur lors de la génération de la réponse.',
             timestamp: new Date().toISOString(),
