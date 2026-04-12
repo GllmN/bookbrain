@@ -15,7 +15,7 @@
 .chat-area {
   flex: 1;
   overflow-y: auto;
-  padding: 20px 24px;
+  padding: 28px 216px;
   display: flex;
   flex-direction: column;
   gap: 16px;
@@ -114,39 +114,85 @@
 }
 
 .answer-text {
-  font-size: 13px;
-  line-height: 1.75;
-  color: var(--text-secondary);
+  font-size: 15px;
+  line-height: 1.8;
+  color: var(--text);
   white-space: pre-wrap;
   position: relative;
   z-index: 1;
+  font-weight: 400;
+  letter-spacing: -0.1px;
 }
 
-// Sources
+// Sources — accordéon
 .sources {
-  margin-top: 14px;
+  margin-top: 16px;
   padding-top: 12px;
   border-top: 0.5px solid var(--border);
   position: relative;
   z-index: 1;
 }
 
-.sources-title {
+.sources-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 2px 4px;
+  border-radius: 6px;
+  font-family: var(--font);
+  transition: background 0.15s;
+
+  &:hover {
+    background: var(--card-hover);
+  }
+}
+
+.chevron {
+  width: 12px;
+  height: 12px;
+  color: var(--text-tertiary);
+  flex-shrink: 0;
+  transition: transform 0.2s ease;
+  transform: rotate(-90deg);
+
+  &.open {
+    transform: rotate(0deg);
+  }
+}
+
+.sources-label {
   font-size: 10px;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.6px;
   color: var(--text-tertiary);
-  margin-bottom: 8px;
+}
+
+.sources-count {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--accent-text);
+  background: var(--accent-soft);
+  padding: 1px 6px;
+  border-radius: 8px;
+}
+
+.sources-list {
+  margin-top: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
 }
 
 .source-item {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 6px 8px;
+  gap: 8px;
+  padding: 4px 6px;
   border-radius: var(--radius-sm);
-  margin-bottom: 2px;
   cursor: pointer;
   transition: background 0.2s;
 
@@ -156,13 +202,13 @@
 }
 
 .source-icon {
-  width: 24px;
-  height: 24px;
-  border-radius: 5px;
+  width: 20px;
+  height: 20px;
+  border-radius: 4px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 8px;
+  font-size: 7px;
   font-weight: 700;
   flex-shrink: 0;
 
@@ -180,28 +226,76 @@
 .source-info {
   flex: 1;
   min-width: 0;
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
 }
 
 .source-book {
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 500;
-  color: var(--text);
+  color: var(--text-secondary);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  max-width: 220px;
 }
 
 .source-detail {
   font-size: 10px;
   color: var(--text-tertiary);
+  white-space: nowrap;
+}
+
+.sources-more {
+  margin-top: 4px;
+  padding: 3px 8px;
+  background: transparent;
+  border: none;
+  color: var(--text-tertiary);
+  font-size: 11px;
+  font-family: var(--font);
+  cursor: pointer;
+  transition: color 0.15s;
+  align-self: flex-start;
+
+  &:hover {
+    color: var(--accent-text);
+  }
 }
 
 .source-score {
   font-size: 10px;
   font-weight: 600;
-  padding: 2px 7px;
+  padding: 1px 6px;
   border-radius: 4px;
   flex-shrink: 0;
+  position: relative;
+  cursor: default;
+
+  &::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: calc(100% + 6px);
+    right: 0;
+    background: var(--card);
+    border: 0.5px solid var(--border);
+    color: var(--text-secondary);
+    font-size: 11px;
+    font-weight: 400;
+    padding: 5px 9px;
+    border-radius: 8px;
+    white-space: nowrap;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.15s ease;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    z-index: 10;
+  }
+
+  &:hover::after {
+    opacity: 1;
+  }
 
   &.high {
     background: var(--green-soft);

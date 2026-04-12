@@ -1,5 +1,8 @@
 import { Router, type Request, type Response, type NextFunction } from "express";
 import { z } from "zod";
+import multer from "multer";
+import fs from "fs";
+import path from "path";
 import { searchChunks, deleteBookChunks, getCollectionStats } from "../services/vectorStore.js";
 import { generateAnswer, streamAnswer } from "../services/llm.js";
 import { config } from "../config/index.js";
@@ -12,6 +15,27 @@ import { AppError } from "../utils/errors.js";
 import type { ApiResponse, HistorySession } from "../models/types.js";
 
 export const router = Router();
+
+// ── Multer — upload vers library/ ─────────────────
+const bookUpload = multer({
+  storage: multer.diskStorage({
+    destination: (_req, _file, cb) => {
+      fs.mkdirSync(config.libraryPath, { recursive: true });
+      cb(null, config.libraryPath);
+    },
+    filename: (_req, file, cb) => {
+      // Browsers encode filenames in latin1; decode to UTF-8
+      const name = Buffer.from(file.originalname, "latin1").toString("utf8");
+      cb(null, name);
+    },
+  }),
+  fileFilter: (_req, file, cb) => {
+    const ext = path.extname(file.originalname).toLowerCase();
+    if (ext === ".epub" || ext === ".pdf") cb(null, true);
+    else cb(new Error(`Type de fichier non supporté : ${ext}`));
+  },
+  limits: { fileSize: 300 * 1024 * 1024, files: 100 }, // 300 MB / fichier, 100 fichiers max
+});
 
 // Wraps async route handlers so Express 4 catches rejections
 const wrap =
@@ -251,6 +275,25 @@ router.delete("/history/:id", wrap(async (req, res) => {
 router.delete("/history", wrap(async (_req, res) => {
   clearAllSessions();
   res.json({ success: true, data: { cleared: true } } satisfies ApiResponse);
+}));
+
+// ── Upload books ──────────────────────────────────
+
+router.post("/books/upload", bookUpload.array("files", 100), wrap(async (req, res) => {
+  const files = req.files as Express.Multer.File[] | undefined;
+  if (!files?.length) {
+    res.status(400).json({ success: false, error: "Aucun fichier reçu" } satisfies ApiResponse);
+    return;
+  }
+  // Trigger ingestion on new files only (force=false skips already-indexed books)
+  runIngestion(false).catch(console.error);
+  res.json({
+    success: true,
+    data: {
+      uploaded: files.length,
+      files: files.map(f => Buffer.from(f.originalname, "latin1").toString("utf8")),
+    },
+  } satisfies ApiResponse);
 }));
 
 // ── Ingest ────────────────────────────────────────

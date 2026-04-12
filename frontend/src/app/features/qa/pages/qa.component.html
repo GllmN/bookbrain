@@ -21,7 +21,7 @@
       </div>
     }
 
-    @for (msg of messages(); track $index) {
+    @for (msg of messages(); track $index; let msgIdx = $index) {
 
       @if (msg.role === 'user') {
         <div class="msg-user">
@@ -40,22 +40,45 @@
 
             @if (msg.sources?.length) {
               <div class="sources">
-                <div class="sources-title">Sources</div>
-                @for (src of msg.sources!; track src.chunkId) {
-                  <div class="source-item">
-                    <div class="source-icon" [class]="src.bookTitle ? 'epub' : 'pdf'">
-                      {{ fileTypeLabel('epub') }}
-                    </div>
-                    <div class="source-info">
-                      <div class="source-book">{{ src.bookTitle }}</div>
-                      <div class="source-detail">
-                        @if (src.chapter) { {{ src.chapter }} · }
-                        @if (src.page) { p. {{ src.page }} }
+                <button class="sources-header" (click)="toggleSources(msgIdx)">
+                  <svg class="chevron" [class.open]="isSourcesExpanded(msgIdx)"
+                    viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M3 4.5L6 7.5L9 4.5" stroke="currentColor" stroke-width="1.5"
+                      stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                  <span class="sources-label">Sources</span>
+                  <span class="sources-count">{{ msg.sources!.length }}</span>
+                </button>
+
+                @if (isSourcesExpanded(msgIdx)) {
+                  <div class="sources-list">
+                    @for (src of (isAllSourcesShown(msgIdx) ? msg.sources! : msg.sources!.slice(0, 3)); track src.chunkId) {
+                      <div class="source-item">
+                        <div class="source-icon" [class]="src.bookTitle ? 'epub' : 'pdf'">
+                          {{ fileTypeLabel(src.bookTitle ? 'epub' : 'pdf') }}
+                        </div>
+                        <div class="source-info">
+                          <div class="source-book">{{ src.bookTitle }}</div>
+                          <div class="source-detail">
+                            @if (src.chapter) { {{ src.chapter }} · }
+                            @if (src.page) { p. {{ src.page }} }
+                          </div>
+                        </div>
+                        <span class="source-score" [class]="scoreClass(src.score)"
+                          data-tooltip="Score de pertinence entre ta question et ce passage">
+                          {{ scoreLabel(src.score) }}
+                        </span>
                       </div>
-                    </div>
-                    <span class="source-score" [class]="scoreClass(src.score)">
-                      {{ scoreLabel(src.score) }}
-                    </span>
+                    }
+                    @if (msg.sources!.length > 3) {
+                      <button class="sources-more" (click)="toggleAllSources(msgIdx)">
+                        @if (isAllSourcesShown(msgIdx)) {
+                          show less
+                        } @else {
+                          +{{ msg.sources!.length - 3 }} more
+                        }
+                      </button>
+                    }
                   </div>
                 }
               </div>

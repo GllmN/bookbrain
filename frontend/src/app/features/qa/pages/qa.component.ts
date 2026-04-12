@@ -34,6 +34,8 @@ export class QaComponent implements OnInit {
   selectedBookIds = signal<string[]>([]);
   loading = signal(false);
   query = '';
+  openSourcesAt = signal<Set<number>>(new Set());
+  allSourcesAt = signal<Set<number>>(new Set());
 
   session = this.#conversationService.activeSession;
   messages = computed(() => this.session()?.messages ?? []);
@@ -143,6 +145,34 @@ export class QaComponent implements OnInit {
           });
         }
       },
+    });
+  }
+
+  isSourcesExpanded(msgIdx: number): boolean {
+    return this.openSourcesAt().has(msgIdx);
+  }
+
+  toggleSources(msgIdx: number) {
+    this.openSourcesAt.update(set => {
+      const next = new Set(set);
+      next.has(msgIdx) ? next.delete(msgIdx) : next.add(msgIdx);
+      return next;
+    });
+    // reset "show all" when closing
+    if (!this.openSourcesAt().has(msgIdx)) {
+      this.allSourcesAt.update(s => { const n = new Set(s); n.delete(msgIdx); return n; });
+    }
+  }
+
+  isAllSourcesShown(msgIdx: number): boolean {
+    return this.allSourcesAt().has(msgIdx);
+  }
+
+  toggleAllSources(msgIdx: number) {
+    this.allSourcesAt.update(set => {
+      const next = new Set(set);
+      next.has(msgIdx) ? next.delete(msgIdx) : next.add(msgIdx);
+      return next;
     });
   }
 

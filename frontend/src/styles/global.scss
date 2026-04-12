@@ -47,6 +47,17 @@ app-root {
 ::-webkit-scrollbar-thumb  { background: var(--border); border-radius: 2px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--text-tertiary); }
 
+// ── Dialog Material ───────────────────────────────────────────────────────────
+.bb-dialog-panel {
+  .mat-mdc-dialog-surface {
+    background: transparent !important;
+    box-shadow: none !important;
+    border-radius: var(--radius) !important;
+    overflow: visible !important;
+    padding: 0 !important;
+  }
+}
+
 // ── Snackbar Material ─────────────────────────────────────────────────────────
 .mat-mdc-snack-bar-container {
   --mdc-snackbar-container-color: var(--card);
