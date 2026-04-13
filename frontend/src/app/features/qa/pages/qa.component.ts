@@ -1,6 +1,7 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  EffectRef,
   inject,
   signal,
   computed,
@@ -49,17 +50,16 @@ export class QaComponent implements OnInit {
   session = this.#conversationService.activeSession;
   messages = computed(() => this.session()?.messages ?? []);
 
-  constructor() {
-    effect(() => {
-      const msgs = this.messages();
-      if (msgs.length > 0) {
-        setTimeout(() => {
-          const el = this.chatAreaRef?.nativeElement;
-          if (el) el.scrollTop = el.scrollHeight;
-        });
-      }
-    });
-  }
+  // Défile vers le bas à chaque nouveau message
+  readonly #autoScroll: EffectRef = effect(() => {
+    const msgs = this.messages();
+    if (msgs.length > 0) {
+      setTimeout(() => {
+        const el = this.chatAreaRef?.nativeElement;
+        if (el) el.scrollTop = el.scrollHeight;
+      });
+    }
+  });
 
   ngOnInit() {
     this.#apiService.getBooks().subscribe({ next: (data) => this.books.set(data.books) });
@@ -108,6 +108,8 @@ export class QaComponent implements OnInit {
   #streamResponse(q: string, sessionId: string): void {
     const ids = this.selectedBookIds().length ? this.selectedBookIds() : undefined;
     const llmModelId = this.#llmModelService.selectedModelId() || undefined;
+    // Objet local partagé entre les callbacks : évite des champs de classe
+    // qui seraient corrompus en cas d'appels concurrents
     const state = { sources: [] as SearchResult[], messageAdded: false };
 
     this.#apiService.streamAsk(q, ids, this.#buildHistory(), llmModelId).subscribe({

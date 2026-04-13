@@ -29,6 +29,9 @@ export class ConversationService {
     this.activeSessionId.set(null);
   }
 
+  // Mise à jour optimiste : le signal est modifié immédiatement,
+  // la persistance SQLite se fait en arrière-plan (fire-and-forget sécurisé).
+
   deleteSession(id: string) {
     if (this.activeSessionId() === id) this.activeSessionId.set(null);
     this.sessions.update(s => s.filter(x => x.id !== id));

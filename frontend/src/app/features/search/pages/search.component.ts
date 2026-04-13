@@ -29,6 +29,7 @@ export class SearchComponent implements OnInit {
   query = '';
   lastQuery = signal('');
 
+  // Restaure l'UI quand l'utilisateur clique sur une recherche dans la sidebar
   readonly #sessionRestore: EffectRef = effect(() => {
     const session = this.#conversationService.activeSession();
     if (session?.type !== 'search') return;
