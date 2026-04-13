@@ -1,55 +1,36 @@
 # CLAUDE.md — Backend
 
 ## Stack
-- Node.js 20+ / Express / TypeScript (API gateway)
-- Python 3.11+ (ingestion pipeline only)
-- SQLite via better-sqlite3 (book metadata)
-- ChromaDB client (vector search)
+- Node.js 20+ / Express / TypeScript strict, ESM
+- Python 3.11+ (ingestion pipeline uniquement)
+- SQLite via better-sqlite3 / ChromaDB client
 
 ## Commands
 ```bash
-npm run dev              # Start dev server (tsx watch)
-npm run build            # Compile TypeScript
-npm test                 # Run vitest
+npm run dev              # Dev server (tsx watch, port 3000)
+npm run build            # Compile TypeScript → dist/
+npm test                 # Vitest
 
-# Python pipeline
-python3 scripts/ingest.py --input ../library          # Index books
-python3 scripts/ingest.py --input ../library --force   # Re-index all
+python3 scripts/ingest.py --input ../library          # Indexer les livres
+python3 scripts/ingest.py --input ../library --force   # Réindexer tout
 ```
 
-## TypeScript conventions
-- Strict mode, ESM imports (`import x from "x.js"` — include .js extension)
-- async/await everywhere, no raw Promises
-- Zod for request validation in routes
-- Custom `AppError` class for error handling (see utils/errors.ts)
-- Interfaces in models/types.ts — shared with frontend
-- Services are pure functions, not classes
-- Use path.resolve for file paths, never hardcode absolute paths
-
-## File organization
+## Structure
 ```
 src/
-├── index.ts              # Express server entry point
-├── config/index.ts       # Env variables + config object
-├── models/types.ts       # Shared TypeScript interfaces
-├── routes/api.ts         # All route definitions
+├── index.ts              # Entry point Express
+├── config/index.ts       # Env variables
+├── models/types.ts       # Interfaces partagées avec le frontend
+├── routes/api.ts         # Toutes les routes
 ├── services/
 │   ├── database.ts       # SQLite CRUD
 │   ├── vectorStore.ts    # ChromaDB queries
-│   ├── llm.ts            # Ollama / Claude API calls
-│   └── ingest.ts         # Spawns Python pipeline
+│   ├── llm.ts            # Ollama / Claude API
+│   └── ingest.ts         # Spawn Python pipeline
 └── utils/errors.ts       # AppError class
 ```
 
-## Python conventions (scripts/ only)
-- Type hints on all functions
-- Docstrings on public functions
-- Use pathlib.Path for file paths
-- Rich for CLI output, tqdm for progress bars
-- Chunks: ~500 tokens, 50 token overlap
-- Embeddings model: all-MiniLM-L6-v2 (384 dimensions)
-
-## Environment variables (.env)
+## Variables d'environnement (.env)
 ```
 PORT=3000
 CHROMA_HOST=localhost
@@ -57,17 +38,14 @@ CHROMA_PORT=8000
 OLLAMA_BASE_URL=http://localhost:11434
 OLLAMA_MODEL=mistral
 ANTHROPIC_API_KEY=
-LLM_PROVIDER=ollama          # "ollama" or "anthropic"
+LLM_PROVIDER=ollama    # "ollama" ou "anthropic"
 LIBRARY_PATH=../library
 SQLITE_PATH=./bookbrain.db
 ```
 
-## Error handling pattern
-- Controllers: try/catch → AppError with status code
-- Services: throw errors, let controllers catch
-- API always responds: `{ success: boolean, data?: T, error?: string }`
-
-## Testing
-- Framework: vitest
-- Test files: `*.test.ts` next to source files
-- Mock ChromaDB and Ollama in tests
+## Python conventions (scripts/ uniquement)
+- Type hints sur toutes les fonctions, docstrings sur les publiques
+- `pathlib.Path` pour les chemins
+- Rich pour le CLI output, tqdm pour les progress bars
+- Chunks : ~500 tokens, 50 tokens overlap
+- Modèle embeddings : `all-MiniLM-L6-v2` (384 dimensions)

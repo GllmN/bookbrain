@@ -1,66 +1,51 @@
 # CLAUDE.md — BookBrain
 
-## What is this project?
-BookBrain is a local RAG (Retrieval-Augmented Generation) app that indexes a personal ebook library (EPUBs, PDFs) and allows semantic search + Q&A over the content.
+BookBrain est une app RAG locale : indexation d'ebooks (EPUB/PDF) + recherche sémantique + Q&A.
 
-## Architecture overview
-- **Frontend**: Angular 21+ — feature-based, design system custom (port 4200)
-- **Backend API**: Node.js + Express + TypeScript (port 3000)
-- **Ingestion pipeline**: Python 3.11+ scripts
-- **LLM**: Ollama (local) ou Claude API (remote)
-- **Vector DB**: ChromaDB (persistent, local in `./chroma_db/`)
-- **Metadata DB**: SQLite via better-sqlite3 (`./bookbrain.db`)
+## Stack
 
-## Project structure
-```
-bookbrain/
-├── backend/          # Node.js API + scripts Python d'ingestion
-├── frontend/         # Angular app (voir frontend/CLAUDE.md pour le détail)
-├── library/          # Livres de l'utilisateur (gitignored)
-├── chroma_db/        # Index vectoriel ChromaDB (gitignored)
-├── bookbrain.db      # SQLite métadonnées + historique (gitignored)
-└── docker-compose.yml
-```
+| Couche | Technologie |
+|--------|-------------|
+| Frontend | Angular 21+, standalone components, signals, OnPush |
+| Backend API | Node.js 20+ / Express / TypeScript strict, port 3000 |
+| Ingestion | Python 3.11+ scripts |
+| LLM | Ollama (local) ou Claude API — variable `LLM_PROVIDER` |
+| Vector DB | ChromaDB persistent (`./chroma_db/`) |
+| Metadata DB | SQLite via better-sqlite3 (`./bookbrain.db`) |
+| Tests front | Jest + jest-preset-angular 16 |
+| Tests back | Vitest |
 
-## Frontend — architecture feature-based
+## Démarrage rapide
 
-```
-frontend/src/
-├── app/
-│   ├── core/            # Singletons : services, models, guards, interceptors
-│   ├── shared/
-│   │   └── components/
-│   │       ├── header/  # HeaderComponent + nav-bar/ + header-filters/ + confirm-dialog/
-│   │       └── sidebar/ # SidebarComponent
-│   ├── features/        # Un dossier par domaine métier (qa/, search/, library/)
-│   ├── app.component.ts # Shell : sidebar + <router-outlet> + initialisation
-│   ├── app.config.ts    # ApplicationConfig
-│   └── app.routes.ts    # Routes à plat par feature (lazy)
-├── environments/        # environment.ts / environment.prod.ts
-└── styles/              # _variables.scss, _mixins.scss, global.scss
+```bash
+# Services Docker (ChromaDB)
+docker compose up -d
+
+# Backend
+cd backend && npm run dev          # port 3000
+
+# Frontend
+cd frontend && ng serve            # port 4200
+
+# Indexation
+cd backend && npm run ingest
 ```
 
-Voir `frontend/CLAUDE.md` pour les conventions détaillées.
+## Règles absolues
 
-## Backend — structure
-```
-backend/
-├── src/
-│   ├── routes/          # Express routes (books, search, ask, history, ingest, models)
-│   ├── services/        # Logique métier (chromadb, ollama/claude, sqlite)
-│   ├── middleware/      # Error handling, validation
-│   └── index.ts         # Entry point Express
-├── scripts/             # Python ingestion scripts
-└── tsconfig.json
-```
+- Ne jamais committer `.env`, `report.*.json`, `*.heapsnapshot`, `*.heapdump`
+- Backend : ESM uniquement — imports avec extension `.js`
+- Frontend : standalone components, signals, `@if`/`@for` (pas `*ngIf`/`*ngFor`)
+- Réponse API toujours : `{ success: boolean, data?: T, error?: string }`
+- Valider les requêtes entrantes avec Zod côté backend
 
-## Gitignore — fichiers exclus
-| Fichier/Dossier | Raison |
-|---|---|
-| `library/` | Livres personnels |
-| `chroma_db/` | Index vectoriel auto-généré |
-| `bookbrain.db` | Base SQLite locale |
-| `bookbrain.db-wal` | Journal WAL SQLite temporaire |
-| `bookbrain.db-shm` | Mémoire partagée SQLite temporaire |
-| `node_modules/`, `venv/` | Dépendances |
-| `.env` | Secrets (clés API) |
+## Sous-CLAUDE.md
+
+- `frontend/CLAUDE.md` — conventions Angular détaillées, design system, testing Jest
+- `backend/CLAUDE.md` — conventions TypeScript, Python pipeline, env variables
+
+## Sécurité
+
+- Secrets uniquement via `process.env` (jamais hardcodés)
+- `ANTHROPIC_API_KEY` → `backend/src/config/index.ts` via env
+- Voir `.gitignore` pour la liste des fichiers exclus
