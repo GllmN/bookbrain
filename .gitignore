@@ -22,6 +22,8 @@ bookbrain.db-shm
 
 # Node.js diagnostic reports
 report.*.json
+*.heapsnapshot
+*.heapdump
 
 # IDE
 .idea/
