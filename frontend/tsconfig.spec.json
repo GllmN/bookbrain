@@ -2,7 +2,9 @@
   "extends": "./tsconfig.json",
   "compilerOptions": {
     "outDir": "./dist/out-tsc",
-    "types": ["jest", "node"]
+    "rootDir": ".",
+    "types": ["jest", "node"],
+    "composite": true
   },
   "include": [
     "src/**/*.spec.ts",
