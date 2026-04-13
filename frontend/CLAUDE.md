@@ -147,6 +147,108 @@ Utiliser uniquement pour la **fonctionnalité**, pas le visuel :
 
 ## Testing
 
-- Framework : Karma + Jasmine
-- Fichiers : `*.spec.ts` à côté du composant
-- Mock `ApiService` avec `jasmine.createSpyObj`
+- Framework : **Jest** + `jest-preset-angular` (Karma déprécié, remplacé)
+- Fichiers : `*.spec.ts` à côté du service/composant testé
+- Mock des services : `jest.fn()` dans un objet partiel fourni via `{ provide: ApiService, useValue: spy }`
+- Setup : `setup-jest.ts` → `setupZoneTestEnv()` (zone.js)
+- Config : `jest.config.js` + `tsconfig.spec.json`
+
+### Pièges connus — ne pas reproduire
+
+**`setup-jest.ts`** — import et appel explicite obligatoires :
+```ts
+import { setupZoneTestEnv } from 'jest-preset-angular/setup-env/zone';
+setupZoneTestEnv();
+```
+- Chemin exact : `setup-env/zone` (pas `setup-jest`, pas `setup-env` seul)
+- `setupZoneTestEnv()` doit être appelé — le module n'est pas auto-exécuté
+
+**`jest.config.js`** — nom de l'option :
+```js
+setupFilesAfterEnv: ['<rootDir>/setup-jest.ts']  // "AfterEnv", pas "AfterFramework"
+```
+
+**`tsconfig.spec.json`** — ne jamais surcharger `module` ni `moduleResolution` :
+```json
+// CORRECT — jest-preset-angular transpile lui-même, ces overrides sont inutiles
+{ "types": ["jest", "node"] }
+
+// INCORRECT — casse l'IntelliSense VS Code
+{ "module": "CommonJS", "moduleResolution": "Node", "types": ["jest", "node"] }
+```
+
+**`tsconfig.json`** — project references obligatoires pour que VS Code utilise le bon tsconfig :
+```json
+"references": [
+  { "path": "./tsconfig.app.json" },
+  { "path": "./tsconfig.spec.json" }
+]
+```
+Sans cela, VS Code utilise `tsconfig.json` pour les `.spec.ts` et ne trouve pas les types Jest.
+
+**Packages requis** :
+```bash
+npm install --save-dev jest @types/jest jest-preset-angular jest-environment-jsdom
+```
+`jest-environment-jsdom` est séparé depuis Jest 28 — ne pas oublier.
+
+### Commandes
+
+```bash
+npm test               # Lance tous les tests
+npm run test:watch     # Mode watch (re-run à chaque sauvegarde)
+npm run test:coverage  # Rapport de couverture dans /coverage
+```
+
+### Tests existants — `ConversationService` (27 cas)
+
+**`buildSession`**
+- Crée une session de type `ask` avec un tableau de messages vide
+- Crée une session de type `search` sans tableau de messages
+- Utilise la requête comme titre si elle fait ≤ 60 caractères
+- Tronque le titre à 60 caractères et ajoute `…` si trop longue
+- Génère un UUID v4 unique à chaque appel
+
+**`selectSession / startNewChat / activeSession`**
+- `activeSession` vaut `null` au démarrage
+- `selectSession` active la session correspondante
+- `activeSession` vaut `null` si l'id ne correspond à aucune session
+- `startNewChat` réinitialise `activeSession` à `null`
+
+**`createSession`**
+- Ajoute la session en tête de liste et l'active
+- Appelle l'API de persistance
+
+**`appendMessage`**
+- Ajoute un message à la session ciblée
+- Ne modifie pas les autres sessions
+
+**`appendToken`**
+- Concatène le token au contenu du dernier message assistant
+- N'ajoute rien si le dernier message n'est pas de l'assistant
+- Ne modifie pas les autres sessions
+
+**`updateLastMessage`**
+- Applique le patch au dernier message assistant
+- N'applique pas le patch si le dernier message n'est pas de l'assistant
+
+**`patchSession`**
+- Met à jour les champs de la session ciblée
+- Ne modifie pas les autres sessions
+
+**`deleteSession`**
+- Retire la session de la liste
+- Réinitialise `activeSessionId` si la session active est supprimée
+- Ne réinitialise pas `activeSessionId` si une autre session est supprimée
+- Appelle l'API de suppression avec le bon id
+
+**`clearHistory`**
+- Vide la liste des sessions
+- Réinitialise `activeSessionId`
+- Appelle l'API de suppression globale
+
+### Ce qui n'est pas testé (intentionnel)
+
+- Composants Angular avec template — rapport coût/bénéfice trop faible (mocks Material + signals)
+- `ApiService` — wrapper HTTP pur, pas de logique métier
+- Effets (`effect()`, scroll) — difficile à tester sans DOM réel
