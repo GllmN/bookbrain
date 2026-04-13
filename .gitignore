@@ -32,5 +32,4 @@ report.*.json
 .DS_Store
 
 # Claude Code — local only
-CLAUDE.local.md
 .claude/
