@@ -71,9 +71,12 @@ export interface HistorySession {
 // ── Ingest ────────────────────────────────────────
 
 export interface IngestStatus {
+  running: boolean;
   total: number;
   processed: number;
+  skipped: number;
   failed: number;
+  currentFile?: string;
   errors: { file: string; error: string }[];
 }
 

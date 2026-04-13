@@ -1,49 +1,87 @@
-import { exec } from "child_process";
-import { promisify } from "util";
+import { spawn } from "child_process";
 import path from "path";
 import { fileURLToPath } from "url";
 import { config } from "../config/index.js";
 import type { IngestStatus } from "../models/types.js";
 
-const execAsync = promisify(exec);
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const SCRIPTS_DIR = path.resolve(__dirname, "../../scripts");
 
-let currentStatus: IngestStatus | null = null;
+const idle: IngestStatus = { running: false, total: 0, processed: 0, skipped: 0, failed: 0, errors: [] };
+let currentStatus: IngestStatus = { ...idle };
 
-export function getIngestStatus(): IngestStatus | null {
+export function getIngestStatus(): IngestStatus {
   return currentStatus;
 }
 
-export async function runIngestion(force: boolean = false): Promise<IngestStatus> {
-  currentStatus = { total: 0, processed: 0, failed: 0, errors: [] };
+export function runIngestion(force: boolean = false): Promise<IngestStatus> {
+  // Prevent concurrent runs
+  if (currentStatus.running) return Promise.resolve(currentStatus);
 
-  const forceFlag = force ? "--force" : "";
-  const cmd = `python3 ${path.join(SCRIPTS_DIR, "ingest.py")} --input "${config.libraryPath}" --db "${config.sqlitePath}" ${forceFlag} --json`;
+  currentStatus = { running: true, total: 0, processed: 0, skipped: 0, failed: 0, errors: [] };
 
-  try {
-    const { stdout, stderr } = await execAsync(cmd, {
-      timeout: 600_000, // 10 min max
-      cwd: SCRIPTS_DIR,
+  return new Promise((resolve) => {
+    const args = [
+      path.join(SCRIPTS_DIR, "ingest.py"),
+      "--input", config.libraryPath,
+      "--db", config.sqlitePath,
+      "--json",
+      "--stream",
+      ...(force ? ["--force"] : []),
+    ];
+
+    const child = spawn("python3", args, { cwd: SCRIPTS_DIR });
+
+    let buffer = "";
+
+    child.stdout.on("data", (chunk: Buffer) => {
+      buffer += chunk.toString();
+      const lines = buffer.split("\n");
+      buffer = lines.pop() ?? "";   // keep incomplete last line
+
+      for (const line of lines) {
+        const trimmed = line.trim();
+        if (!trimmed) continue;
+        try {
+          const msg = JSON.parse(trimmed);
+
+          if (msg.type === "start") {
+            currentStatus.total = msg.total ?? 0;
+
+          } else if (msg.type === "progress") {
+            currentStatus.currentFile = msg.file;
+            if (msg.status === "ok")      currentStatus.processed++;
+            else if (msg.status === "skipped") currentStatus.skipped++;
+            else if (msg.status === "failed") {
+              currentStatus.failed++;
+              currentStatus.errors.push({ file: msg.file, error: msg.error ?? "unknown" });
+            }
+
+          } else if (msg.type === "done") {
+            currentStatus.running = false;
+            currentStatus.currentFile = undefined;
+          }
+        } catch {
+          // Non-JSON line (rich console output) — ignore
+        }
+      }
     });
 
-    if (stderr) console.warn("[ingest] stderr:", stderr);
-
-    // Parse JSON output from Python script
-    const result = JSON.parse(stdout.trim());
-    currentStatus = {
-      total: result.total ?? 0,
-      processed: result.processed ?? 0,
-      failed: result.failed ?? 0,
-      errors: result.errors ?? [],
-    };
-  } catch (err: any) {
-    currentStatus.failed++;
-    currentStatus.errors.push({
-      file: "pipeline",
-      error: err.message ?? "Unknown error",
+    child.stderr.on("data", (chunk: Buffer) => {
+      console.warn("[ingest] stderr:", chunk.toString());
     });
-  }
 
-  return currentStatus;
+    child.on("close", () => {
+      currentStatus.running = false;
+      currentStatus.currentFile = undefined;
+      resolve(currentStatus);
+    });
+
+    child.on("error", (err) => {
+      currentStatus.running = false;
+      currentStatus.failed++;
+      currentStatus.errors.push({ file: "pipeline", error: err.message });
+      resolve(currentStatus);
+    });
+  });
 }

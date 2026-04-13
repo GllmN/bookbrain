@@ -163,6 +163,7 @@ def main():
     parser.add_argument("--force", action="store_true", help="Re-index already indexed files")
     parser.add_argument("--json", action="store_true", help="Output JSON (for Node.js integration)")
     parser.add_argument("--db", default="../bookbrain.db", help="SQLite database path")
+    parser.add_argument("--stream", action="store_true", help="Emit one JSON line per file (for Node.js real-time progress)")
     args = parser.parse_args()
 
     input_dir = Path(args.input).resolve()
@@ -177,11 +178,14 @@ def main():
 
     if not files:
         console.print(f"[yellow]No PDF/EPUB files found in {input_dir}[/yellow]")
-        if args.json:
-            print(json.dumps({"total": 0, "processed": 0, "failed": 0, "errors": []}))
+        if args.json or args.stream:
+            print(json.dumps({"type": "done", "total": 0, "processed": 0, "skipped": 0, "failed": 0, "errors": []}), flush=True)
         sys.exit(0)
 
     console.print(f"\n📚 Found [bold]{len(files)}[/bold] books in {input_dir}\n")
+
+    if args.stream:
+        print(json.dumps({"type": "start", "total": len(files)}), flush=True)
 
     # Connect to services
     chroma = get_chroma_client()
@@ -220,6 +224,14 @@ def main():
                 errors.append({"file": result["file"], "error": result.get("error", "unknown")})
                 console.print(f"  ❌ {file_path.name}: {result.get('error')}")
 
+            if args.stream:
+                print(json.dumps({
+                    "type": "progress",
+                    "file": file_path.name,
+                    "status": result["status"],
+                    "error": result.get("error"),
+                }), flush=True)
+
             progress.advance(task)
 
     conn.close()
@@ -230,13 +242,15 @@ def main():
     total_chunks = collection.count()
     console.print(f"🧠 Total chunks in vector store: {total_chunks}\n")
 
-    if args.json:
+    if args.json or args.stream:
         print(json.dumps({
+            "type": "done",
             "total": len(files),
             "processed": processed,
+            "skipped": len(files) - processed - failed,
             "failed": failed,
             "errors": errors,
-        }))
+        }), flush=True)
 
 
 if __name__ == "__main__":

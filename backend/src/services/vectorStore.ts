@@ -1,16 +1,24 @@
-import { ChromaClient } from "chromadb";
+import { ChromaClient, type EmbeddingFunction } from "chromadb";
 import { config } from "../config/index.js";
 import type { SearchResult } from "../models/types.js";
 
 const COLLECTION_NAME = "bookbrain_chunks";
 const EMBED_MODEL = "nomic-embed-text";
 
+// Stub: ChromaDB requires an EmbeddingFunction even when we always pass
+// pre-computed embeddings via queryEmbeddings. This stub is never actually called.
+const noopEmbedder: EmbeddingFunction = {
+  generate: (_texts: string[]): Promise<number[][]> =>
+    Promise.reject(new Error("noopEmbedder.generate should never be called")),
+};
+
 let client: ChromaClient;
 
 function getClient(): ChromaClient {
   if (!client) {
     client = new ChromaClient({
-      path: `http://${config.chroma.host}:${config.chroma.port}`,
+      host: config.chroma.host,
+      port: config.chroma.port,
     });
   }
   return client;
@@ -33,7 +41,10 @@ export async function searchChunks(
   bookIds?: string[]
 ): Promise<SearchResult[]> {
   const chroma = getClient();
-  const collection = await chroma.getOrCreateCollection({ name: COLLECTION_NAME });
+  const collection = await chroma.getOrCreateCollection({
+    name: COLLECTION_NAME,
+    embeddingFunction: noopEmbedder,
+  });
 
   const queryEmbedding = await getEmbedding(queryText);
   const whereFilter = bookIds?.length ? { book_id: { $in: bookIds } } : undefined;
@@ -60,14 +71,20 @@ export async function searchChunks(
 
 export async function deleteBookChunks(bookId: string): Promise<void> {
   const chroma = getClient();
-  const collection = await chroma.getOrCreateCollection({ name: COLLECTION_NAME });
+  const collection = await chroma.getOrCreateCollection({
+    name: COLLECTION_NAME,
+    embeddingFunction: noopEmbedder,
+  });
   await collection.delete({ where: { book_id: bookId } as any });
 }
 
 export async function getCollectionStats(): Promise<{ count: number }> {
   try {
     const chroma = getClient();
-    const collection = await chroma.getOrCreateCollection({ name: COLLECTION_NAME });
+    const collection = await chroma.getOrCreateCollection({
+      name: COLLECTION_NAME,
+      embeddingFunction: noopEmbedder,
+    });
     return { count: await collection.count() };
   } catch {
     return { count: 0 };
