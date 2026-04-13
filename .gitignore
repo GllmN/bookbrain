@@ -20,6 +20,9 @@ bookbrain.db-shm
 .env
 *.env.local
 
+# Node.js diagnostic reports
+report.*.json
+
 # IDE
 .idea/
 .vscode/
